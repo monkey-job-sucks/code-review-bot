@@ -7,12 +7,10 @@ import gitlab from '../gitlab/gitlab.service';
 import factory from './slack.factory';
 import { MergeRequest } from '../mongo/mongo.service';
 
-const MR_SHOULD_LOAD_CHANGES = process.env.GITLAB_MR_SHOULD_LOAD_CHANGES === 'true';
-
 // TODO:
 // só receber de canais selecionados
 const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
-    const mr = await gitlab.getMergeRequestDetail(message.text, MR_SHOULD_LOAD_CHANGES);
+    const mr = await gitlab.getMergeRequestDetail(message.text);
 
     const slackMessage = factory.generateMergeRequestMessage(message.user, mr);
 

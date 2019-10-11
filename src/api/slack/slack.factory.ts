@@ -1,8 +1,14 @@
-// eslint-disable-next-line no-unused-vars
+/* eslint-disable no-unused-vars */
+import { MessageAttachment } from '@slack/web-api';
+
 import { IGitlabMergeRequest } from '../gitlab/gitlab.interfaces';
+/* eslint-enable no-unused-vars */
 
 // eslint-disable-next-line import/prefer-default-export
-const generateMergeRequestMessage = (user: string, merge: IGitlabMergeRequest): any => {
+const generateMergeRequestMessage = (
+    user: string,
+    merge: IGitlabMergeRequest,
+): MessageAttachment => {
     const { repository, detail } = merge;
 
     const title = `MR adicionado por <@${user}> em ${repository}`;
@@ -32,7 +38,7 @@ const generateMergeRequestMessage = (user: string, merge: IGitlabMergeRequest): 
         'title': title,
         'title_link': detail.web_url,
         'text': messages.join('\r'),
-        'mrkdwn': true,
+        // 'mrkdwn': true,
         'fields': fields,
     };
 };

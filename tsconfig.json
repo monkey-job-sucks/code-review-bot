@@ -2,14 +2,14 @@
     "compilerOptions": {
         "module": "commonjs",
         "moduleResolution": "node",
-        "noImplicitAny": false,
+        "noImplicitAny": true,
         "removeComments": true,
         "preserveConstEnums": true,
         "outDir": "dist",
         "declaration": false,
         "allowSyntheticDefaultImports": true,
-        "lib": [ "es2015", "dom" ],
-        "target": "es2015"
+        "lib": ["esnext"],
+        "target": "es2018"
     },
     "include": [
         "./src/**/*"
