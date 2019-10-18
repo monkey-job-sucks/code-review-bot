@@ -13,17 +13,6 @@ const generateMergeRequestMessage = (
 
     const title = `MR adicionado por <@${user}> em ${repository}`;
 
-    const messages = [];
-
-    const hasMultipleChanges = detail.changes_count !== '1';
-    const pluralWord = hasMultipleChanges ? 's' : '';
-
-    if (merge.changes) {
-        let changes = `*${detail.changes_count} arquivo${pluralWord} alterado${pluralWord}`;
-        changes += ` (+${merge.changes.additions} -${merge.changes.deletions})*`;
-        messages.push(changes);
-    }
-
     const fields = [{
         'title': 'Origem',
         'value': detail.source_branch,
@@ -37,8 +26,6 @@ const generateMergeRequestMessage = (
     return {
         'title': title,
         'title_link': detail.web_url,
-        'text': messages.join('\r'),
-        // 'mrkdwn': true,
         'fields': fields,
     };
 };
