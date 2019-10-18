@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 
 import { MergeRequest, IMergeRequestModel } from '../api/mongo';
 import { service as slack, helper as slackHelper } from '../api/slack';
-import { service as gitlab, IGitlabMergeRequestDetail } from '../api/gitlab';
+import { service as gitlab, IGitlabMergeRequestDetail, IGitlabMergeRequestReaction } from '../api/gitlab';
 import logger from '../helpers/Logger';
 /* eslint-enable no-unused-vars */
 
@@ -18,15 +18,14 @@ const fetchSingleMR = async (mr: IMergeRequestModel) => {
 };
 
 const fetchUpvoters = async (mr: IMergeRequestModel): Promise<string[]> => {
-    const reactions = await gitlab.getMergeRequestReactions(mr.url);
+    const reactions: IGitlabMergeRequestReaction[] = await gitlab.getMergeRequestReactions(mr.url);
 
     const upvoters = reactions
-        .filter((reaction) => {
-            return reaction.name === 'thumbsup';
-        })
-        .map((reaction) => {
-            return reaction.user.username;
-        });
+        .reduce((names: string[], reaction: IGitlabMergeRequestReaction) => {
+            if (reaction.name === 'thumbsup') names.push(reaction.user.username);
+
+            return names;
+        }, []);
 
     return upvoters;
 };
