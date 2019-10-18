@@ -11,7 +11,7 @@ const randomBetween = (min: number, max: number): number => {
     return Math.floor(Math.random() * max) + min;
 };
 
-const getRandomReaction = (reactions: string[]) => {
+const getRandomReaction = (reactions: string[]): string => {
     const i = randomBetween(0, reactions.length - 1);
 
     return reactions[i];
