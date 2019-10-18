@@ -18,7 +18,9 @@ const getRandomReaction = (reactions: string[]): string => {
 };
 
 const randomizeThumbsup = (current: string[], amount: number): string[] => {
-    if (amount > upvoteReactions.length) throw new Error('Not enough reactions');
+    if (amount + current.length > upvoteReactions.length) {
+        throw new Error('Not enough reactions');
+    }
 
     const thumbsup: string[] = [];
 
