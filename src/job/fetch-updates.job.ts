@@ -42,7 +42,7 @@ const updateUpvoters = async (
 
     // if someone added a new upvote, save it
     if (_.difference(upvoters, mr.analytics.upvoters).length > 0) {
-        let upvotersChanges = current.upvotes - mr.analytics.upvoters.length;
+        const upvotersChanges = current.upvotes - mr.analytics.upvoters.length;
 
         // eslint-disable-next-line no-param-reassign
         mr.analytics.upvoters = upvoters;
@@ -52,13 +52,7 @@ const updateUpvoters = async (
         if (upvotersChanges > 0) {
             slackReactions = slackHelper.randomizeThumbsup(mr.slack.reactions, upvotersChanges);
         } else {
-            const remove: string[] = [];
-
-            while (upvotersChanges < 0) {
-                remove.push(mr.slack.reactions.pop());
-
-                upvotersChanges += 1;
-            }
+            const remove = mr.slack.reactions.splice(0, upvotersChanges * -1);
 
             await slack.removeReaction(
                 JSON.parse(mr.rawSlackMessage), mr.slack.messageId, remove,
