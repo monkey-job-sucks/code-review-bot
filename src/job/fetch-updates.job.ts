@@ -35,7 +35,7 @@ const updateUpvoters = async (
     mr: IMergeRequestModel,
     current: IGitlabMergeRequestDetail,
 ): Promise<string[]> => {
-    let slackReactions: string[] = [];
+    const slackReactions: string[] = [];
 
     // get mr upvoters
     const upvoters = await fetchUpvoters(mr);
@@ -50,14 +50,14 @@ const updateUpvoters = async (
         // if has more upvotes on git, add reactions
         // otherwise remove it
         if (upvotersChanges > 0) {
-            slackReactions = slackHelper.randomizeThumbsup(mr.slack.reactions, upvotersChanges);
-        } else {
-            const remove = mr.slack.reactions.splice(0, upvotersChanges * -1);
-
-            await slack.removeReaction(
-                JSON.parse(mr.rawSlackMessage), mr.slack.messageId, remove,
-            );
+            return slackHelper.randomizeThumbsup(mr.slack.reactions, upvotersChanges);
         }
+
+        const remove = mr.slack.reactions.splice(0, upvotersChanges * -1);
+
+        await slack.removeReaction(
+            JSON.parse(mr.rawSlackMessage), mr.slack.messageId, remove,
+        );
     }
 
     return slackReactions;
@@ -104,12 +104,14 @@ const updateReviewers = async (mr: IMergeRequestModel): Promise<string[]> => {
     }
 
     // if has an open discussion, add reaction
+    if (discussions.hasOpenDiscussion && !mr.slack.reactions.includes('speech_balloon')) {
+        slackReactions.push('speech_balloon');
+
+        return slackReactions;
+    }
+
     // otherwise remove it
-    if (discussions.hasOpenDiscussion) {
-        if (!mr.slack.reactions.includes('speech_balloon')) {
-            slackReactions.push('speech_balloon');
-        }
-    } else if (mr.slack.reactions.includes('speech_balloon')) {
+    if (mr.slack.reactions.includes('speech_balloon')) {
         // eslint-disable-next-line no-param-reassign
         mr.slack.reactions = mr.slack.reactions.filter((reaction) => {
             return reaction !== 'speech_balloon';
@@ -177,7 +179,7 @@ const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDeta
 
         return mr.save();
     } catch (err) {
-        console.error(err);
+        logger.error(err);
     }
 };
 
