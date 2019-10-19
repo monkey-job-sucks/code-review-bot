@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
-        operating-system: [ubuntu-latest, windows-latest]
+        operating-system: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v1
       - name: Set Node.js 10.x
