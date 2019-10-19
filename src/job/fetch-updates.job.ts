@@ -178,7 +178,7 @@ const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDeta
 
         return mr.save();
     } catch (err) {
-        logger.error(err);
+        return logger.error(err);
     }
 };
 
