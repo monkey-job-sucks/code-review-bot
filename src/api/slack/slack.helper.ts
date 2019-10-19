@@ -7,14 +7,27 @@ const upvoteReactions = [
     'thumbsup::skin-tone-6',
 ];
 
-const randomBetween = (min: number, max: number): number => {
-    return Math.floor(Math.random() * max) + min;
-};
+const shuffle = <T>(array: T[]): T[] => {
+    let currentIndex = array.length;
+    let randomIndex: number;
+    let temporaryValue;
 
-const getRandomReaction = (reactions: string[]): string => {
-    const i = randomBetween(0, reactions.length - 1);
+    // While there remain elements to shuffle...
+    while (currentIndex !== 0) {
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
 
-    return reactions[i];
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+
+        /* eslint-disable no-param-reassign */
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+        /* eslint-enable no-param-reassign */
+    }
+
+    return array;
 };
 
 const randomizeThumbsup = (current: string[], amount: number): string[] => {
@@ -22,15 +35,16 @@ const randomizeThumbsup = (current: string[], amount: number): string[] => {
         throw new Error('Not enough reactions');
     }
 
-    const thumbsup: string[] = [];
+    const reactions = shuffle(upvoteReactions);
 
-    while (thumbsup.length < amount) {
-        const reaction = getRandomReaction(upvoteReactions);
+    const unusedReactions = reactions.filter((reaction) => {
+        return !current.includes(reaction);
+    });
 
-        if (!thumbsup.includes(reaction) && !current.includes(reaction)) thumbsup.push(reaction);
-    }
+    const newReactionsToFetch = amount - current.length;
+    const newReactions = unusedReactions.slice(0, newReactionsToFetch);
 
-    return thumbsup;
+    return current.concat(newReactions);
 };
 
 export default {
