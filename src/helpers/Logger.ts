@@ -1,10 +1,12 @@
 import { EventEmitter } from 'events';
 
+/* eslint-disable no-unused-vars */
 enum ELevel {
     INFO = 'info',
     WANR = 'warn',
     ERROR = 'error',
 }
+/* eslint-enable no-unused-vars */
 
 class Logger {
     private SHOULD_LOG_ON_SLACK: boolean;
