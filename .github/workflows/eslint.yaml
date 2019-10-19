@@ -1,0 +1,22 @@
+name: ESLint
+
+on:
+  pull_request:
+    types: [opened, synchronize, review_requested]
+
+jobs:
+  build:
+    name: ESLint
+    runs-on: ${{ matrix.operating-system }}
+    strategy:
+      matrix:
+        operating-system: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Set Node.js 10.x
+        uses: actions/setup-node@master
+        with:
+          version: 10.x
+      - name: npm ci
+        run: npm ci
+      - name: npm run lint
+        run: npm run lint
