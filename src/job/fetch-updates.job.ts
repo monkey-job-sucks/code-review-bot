@@ -13,9 +13,7 @@ interface IReviewers {
     hasOpenDiscussion: boolean;
 }
 
-const fetchSingleMR = async (mr: IMergeRequestModel) => {
-    return gitlab.getMergeRequestDetail(mr.url);
-};
+const fetchSingleMR = async (mr: IMergeRequestModel) => gitlab.getMergeRequestDetail(mr.url);
 
 const fetchUpvoters = async (mr: IMergeRequestModel): Promise<string[]> => {
     const reactions: IGitlabMergeRequestReaction[] = await gitlab.getMergeRequestReactions(mr.url);
