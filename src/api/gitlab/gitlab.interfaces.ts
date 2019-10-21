@@ -5,6 +5,7 @@
 export enum EGitlabMergeRequestResource {
     DETAIL = '',
     COMMITS = 'commits',
+    EMOJIS = 'award_emoji',
     DISCUSSIONS = 'discussions',
 }
 
@@ -19,7 +20,6 @@ export enum EGitlabMergeRequestStatus {
 export interface IGitlabMergeRequest {
     repository: string;
     detail: IGitlabMergeRequestDetail;
-    changes?: IGitlabMergeRequestChanges;
 }
 
 export interface IGitlabMergeRequestChanges {
@@ -120,4 +120,49 @@ export interface IGitlabMergeRequestDetailPipeline {
 export interface IGitlabMergeRequestUrlInfo {
     repository: string;
     id: string;
+}
+
+export interface IGitlabMergeRequestReaction {
+    id: number;
+    name: string;
+    user: IGitlabUser;
+    created_at: Date;
+    updated_at: Date;
+    awardable_id: number;
+    awardable_type: string;
+}
+
+export interface IGitlabMergeRequestDiscussionNotePosition {
+    base_sha: string;
+    start_sha: string;
+    head_sha: string;
+    old_path: string;
+    new_path: string;
+    position_type: string;
+    old_line?: number;
+    new_line: number;
+}
+
+export interface IGitlabMergeRequestDiscussionNote {
+    id: number;
+    type: string;
+    body: string;
+    attachment?: any;
+    author: IGitlabUser;
+    created_at: Date;
+    updated_at: Date;
+    system: boolean;
+    noteable_id: number;
+    noteable_type: string;
+    position: IGitlabMergeRequestDiscussionNotePosition;
+    resolvable: boolean;
+    resolved: boolean;
+    resolved_by?: IGitlabUser;
+    noteable_iid: number;
+}
+
+export interface IGitlabMergeRequestDiscussion {
+    id: string;
+    individual_note: boolean;
+    notes: IGitlabMergeRequestDiscussionNote[];
 }

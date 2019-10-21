@@ -1,7 +1,6 @@
 import { Schema, SchemaTypes } from 'mongoose';
 
 const {
-    Map,
     Date,
     String,
     Boolean,
@@ -12,21 +11,29 @@ const actionLogSchema = new Schema({
     'by': String,
 }, { '_id': false });
 
+const slackSchema = new Schema({
+    'messageId': String,
+    'reactions': { 'type': [String], 'default': [] },
+}, { '_id': false });
+
 // TODO:
 // colocar mergedat e closeat na mesma data e tratar por status
 // trocar os campos raw por um "any", Mixed não funcionou :(
 const schema = new Schema({
     'rawMergeRequest': String,
     'rawSlackMessage': String,
+    'url': String,
+    'repository': String,
+    'id': String,
     'created': actionLogSchema,
     'added': actionLogSchema,
     'merged': actionLogSchema,
     'closed': actionLogSchema,
-    'slackMessageId': String,
+    'slack': slackSchema,
     'done': { 'type': Boolean, 'default': false },
     'analytics': {
-        'upvotes': { 'type': Map, 'of': String },
-        'discussions': { 'type': Map, 'of': String },
+        'upvoters': { 'type': [String], 'default': [] },
+        'reviewers': { 'type': [String], 'default': [] },
     },
 }, { 'strict': false, 'autoIndex': false });
 

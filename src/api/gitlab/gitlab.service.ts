@@ -6,6 +6,8 @@ import {
     IGitlabMergeRequest,
     EGitlabMergeRequestResource,
     IGitlabMergeRequestUrlInfo,
+    IGitlabMergeRequestReaction,
+    IGitlabMergeRequestDiscussion,
 } from './gitlab.interfaces';
 /* eslint-enable no-unused-vars */
 
@@ -34,6 +36,7 @@ class Gitlab {
         });
     }
 
+    // TODO: aceitar url ou repository e id
     public async getMergeRequestDetail(url: string): Promise<IGitlabMergeRequest> {
         const info: IGitlabMergeRequestUrlInfo = helper.getUrlInfo(url);
 
@@ -50,6 +53,33 @@ class Gitlab {
         };
 
         return merge;
+    }
+
+    // TODO: aceitar url ou repository e id
+    public async getMergeRequestReactions(url: string): Promise<IGitlabMergeRequestReaction[]> {
+        const info: IGitlabMergeRequestUrlInfo = helper.getUrlInfo(url);
+
+        const encodedRepository = encodeURIComponent(info.repository);
+
+        const response = await this.api({
+            'method': 'GET',
+            'url': `/projects/${encodedRepository}/merge_requests/${info.id}/${EGitlabMergeRequestResource.EMOJIS}`,
+        });
+
+        return response.data;
+    }
+
+    public async getMergeRequestDiscussions(url: string): Promise<IGitlabMergeRequestDiscussion[]> {
+        const info: IGitlabMergeRequestUrlInfo = helper.getUrlInfo(url);
+
+        const encodedRepository = encodeURIComponent(info.repository);
+
+        const response = await this.api({
+            'method': 'GET',
+            'url': `/projects/${encodedRepository}/merge_requests/${info.id}/${EGitlabMergeRequestResource.DISCUSSIONS}`,
+        });
+
+        return response.data;
     }
 }
 

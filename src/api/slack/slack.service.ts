@@ -1,7 +1,7 @@
-/* eslint-disable import/no-cycle */
-// eslint-disable-next-line no-unused-vars
+/* eslint-disable import/no-cycle, no-unused-vars */
 import { Botkit, BotkitMessage, BotWorker } from 'botkit';
 import { SlackAdapter, SlackEventMiddleware, SlackMessageTypeMiddleware } from 'botbuilder-adapter-slack';
+/* eslint-enabled import/no-cycle, no-unused-vars */
 
 import commands from './slack.commands';
 
@@ -43,7 +43,7 @@ class Slack {
             'botToken': this.token,
             'redirectUri': null,
             'verificationToken': this.verificationToken,
-            'scopes': ['bot', 'commands', 'chat:write:bot', 'emoji:read', 'incoming-webhook', 'reactions:read', 'reactions:write', 'chat:write:user', 'users:read', 'channels:read', 'groups:read', 'mpim:read', 'im:read'],
+            'scopes': ['bot', 'commands', 'chat:write:bot', 'emoji:read', 'incoming-webhook', 'reactions:read', 'chat:write:user', 'users:read', 'channels:read', 'groups:read', 'mpim:read', 'im:read'],
         });
 
         // Use SlackEventMiddleware to emit events that match their original Slack event types.
@@ -70,15 +70,47 @@ class Slack {
     }
 
     public async addReaction(
-        message: BotkitMessage, timestamp: string, emoji: string,
-    ): Promise<void> {
+        message: BotkitMessage, timestamp: string, emoji: string | string[],
+    ): Promise<any> {
         const api = await this.adapter.getAPI(message);
 
-        await api.reactions.add({
-            'name': emoji,
-            'timestamp': timestamp,
-            'channel': message.channel,
-        });
+        if (typeof emoji === 'string') {
+            return api.reactions.add({
+                'name': emoji,
+                'timestamp': timestamp,
+                'channel': message.channel,
+            });
+        }
+
+        return Promise.all(emoji.map((e) => {
+            return api.reactions.add({
+                'name': e,
+                'timestamp': timestamp,
+                'channel': message.channel,
+            });
+        }));
+    }
+
+    public async removeReaction(
+        message: BotkitMessage, timestamp: string, emoji: string | string[],
+    ): Promise<any> {
+        const api = await this.adapter.getAPI(message);
+
+        if (typeof emoji === 'string') {
+            return api.reactions.remove({
+                'name': emoji,
+                'timestamp': timestamp,
+                'channel': message.channel,
+            });
+        }
+
+        return Promise.all(emoji.map((e) => {
+            return api.reactions.remove({
+                'name': e,
+                'timestamp': timestamp,
+                'channel': message.channel,
+            });
+        }));
     }
 
     public async updateMessage(message: BotkitMessage, timestamp: string, newText: string) {
