@@ -82,13 +82,11 @@ class Slack {
             });
         }
 
-        return Promise.all(emoji.map((e) => {
-            return api.reactions.add({
-                'name': e,
-                'timestamp': timestamp,
-                'channel': message.channel,
-            });
-        }));
+        return Promise.all(emoji.map((e) => api.reactions.add({
+            'name': e,
+            'timestamp': timestamp,
+            'channel': message.channel,
+        })));
     }
 
     public async removeReaction(
@@ -104,13 +102,11 @@ class Slack {
             });
         }
 
-        return Promise.all(emoji.map((e) => {
-            return api.reactions.remove({
-                'name': e,
-                'timestamp': timestamp,
-                'channel': message.channel,
-            });
-        }));
+        return Promise.all(emoji.map((e) => api.reactions.remove({
+            'name': e,
+            'timestamp': timestamp,
+            'channel': message.channel,
+        })));
     }
 
     public async updateMessage(message: BotkitMessage, timestamp: string, newText: string) {

@@ -11,9 +11,7 @@ mongoose.connect(process.env.MONGO_URI, {
     'useUnifiedTopology': true,
 });
 
-const buildCollectionName = (name: string): string => {
-    return `${COLLECTION_PREFIX}${name}`;
-};
+const buildCollectionName = (name: string): string => `${COLLECTION_PREFIX}${name}`;
 
 const mergeRequestCollectionName = buildCollectionName('MergeRequest');
 

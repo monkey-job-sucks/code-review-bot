@@ -3,8 +3,7 @@
     "plugins": ["@typescript-eslint"],
     "extends": "airbnb",
     "rules": {
-      "indent": ["error", 4, { "SwitchCase": 1 }],
-      "arrow-body-style": ["error", "always"],
+      "indent": ["error", 4, { "SwitchCase": 1 }],      
       "quote-props": ["error", "always"]
     },
     "settings": {

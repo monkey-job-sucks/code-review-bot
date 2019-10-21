@@ -7,6 +7,7 @@ const upvoteReactions = [
     'thumbsup::skin-tone-6',
 ];
 
+// TODO: move to other file
 const shuffle = <T>(array: T[]): T[] => {
     let currentIndex = array.length;
     let randomIndex: number;
@@ -37,9 +38,7 @@ const randomizeThumbsup = (current: string[], amount: number): string[] => {
 
     const reactions = shuffle(upvoteReactions);
 
-    const unusedReactions = reactions.filter((reaction) => {
-        return !current.includes(reaction);
-    });
+    const unusedReactions = reactions.filter((reaction) => !current.includes(reaction));
 
     const newReactionsToFetch = amount - current.length;
     const newReactions = unusedReactions.slice(0, newReactionsToFetch);
