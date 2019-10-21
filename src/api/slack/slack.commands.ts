@@ -4,6 +4,7 @@ import { BotWorker, BotkitMessage } from 'botkit';
 
 import jobs from '../../job';
 import slack from './slack.service';
+import logger from '../../helpers/Logger';
 import factory from './slack.factory';
 import { MergeRequest, IMergeRequestModel } from '../mongo';
 import { service as gitlab, IGitlabMergeRequest } from '../gitlab';
@@ -52,8 +53,8 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
 // eslint-disable-next-line consistent-return
 const slashCommandHandler = async (bot: BotWorker, message: BotkitMessage): Promise<void> => {
     const start = Date.now();
-    console.log(JSON.stringify(message));
-    console.log(message.command);
+    logger.info(JSON.stringify(message));
+    logger.info(message.command);
 
     switch (message.command) {
         case '/code-review':
@@ -63,7 +64,7 @@ const slashCommandHandler = async (bot: BotWorker, message: BotkitMessage): Prom
             return bot.reply(message, 'Não sei fazer isso ainda :disappointed:');
     }
 
-    console.log(`Took ${Date.now() - start}ms`);
+    logger.info(`Took ${Date.now() - start}ms`);
 };
 
 export default {

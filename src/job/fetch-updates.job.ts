@@ -13,9 +13,7 @@ interface IReviewers {
     hasOpenDiscussion: boolean;
 }
 
-const fetchSingleMR = async (mr: IMergeRequestModel) => {
-    return gitlab.getMergeRequestDetail(mr.url);
-};
+const fetchSingleMR = async (mr: IMergeRequestModel) => gitlab.getMergeRequestDetail(mr.url);
 
 const fetchUpvoters = async (mr: IMergeRequestModel): Promise<string[]> => {
     const reactions: IGitlabMergeRequestReaction[] = await gitlab.getMergeRequestReactions(mr.url);
@@ -65,24 +63,13 @@ const updateUpvoters = async (
 const fetchDiscussions = async (mr: IMergeRequestModel): Promise<IReviewers> => {
     const discussions = await gitlab.getMergeRequestDiscussions(mr.url);
 
-    const userInteractions = discussions
-        .filter((discussion) => {
-            return !discussion.individual_note;
-        });
+    const userInteractions = discussions.filter((discussion) => !discussion.individual_note);
 
     // get username of first discussion on each thread
-    const reviewers = userInteractions
-        .map((discussion) => {
-            return discussion.notes[0].author.username;
-        });
+    const reviewers = userInteractions.map((discussion) => discussion.notes[0].author.username);
 
     const hasOpenDiscussion = userInteractions
-        .some((discussion) => {
-            return discussion.notes
-                .some((note) => {
-                    return note.resolvable && !note.resolved;
-                });
-        });
+        .some((discussion) => discussion.notes.some((note) => note.resolvable && !note.resolved));
 
     return {
         'reviewers': reviewers,
@@ -112,9 +99,7 @@ const updateReviewers = async (mr: IMergeRequestModel): Promise<string[]> => {
     // otherwise remove it
     if (mr.slack.reactions.includes('speech_balloon')) {
         // eslint-disable-next-line no-param-reassign
-        mr.slack.reactions = mr.slack.reactions.filter((reaction) => {
-            return reaction !== 'speech_balloon';
-        });
+        mr.slack.reactions = mr.slack.reactions.filter((reaction) => reaction !== 'speech_balloon');
 
         await slack.removeReaction(
             JSON.parse(mr.rawSlackMessage), mr.slack.messageId, 'speech_balloon',
@@ -197,9 +182,7 @@ const fetchMRUpdatesJob = {
 
         const currentMRStatus = await Promise.all(openMRs.map(fetchSingleMR));
 
-        await Promise.all(openMRs.map((mr, i) => {
-            return updateMR(mr, currentMRStatus[i].detail);
-        }));
+        await Promise.all(openMRs.map((mr, i) => updateMR(mr, currentMRStatus[i].detail)));
 
         return logger.info('Job ended');
     },
