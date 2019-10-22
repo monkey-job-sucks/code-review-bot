@@ -129,6 +129,16 @@ class Slack {
             }],
         });
     }
+
+    public async sendEphemeral(message: BotkitMessage, text: string) {
+        const api = await this.adapter.getAPI(message);
+
+        return api.chat.postEphemeral({
+            'text': text,
+            'user': message.user,
+            'channel': message.channel,
+        });
+    }
 }
 
 const slack = new Slack();
