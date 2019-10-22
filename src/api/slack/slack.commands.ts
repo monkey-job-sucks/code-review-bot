@@ -10,6 +10,8 @@ import { MergeRequest, IMergeRequestModel } from '../mongo';
 import { service as gitlab, IGitlabMergeRequest } from '../gitlab';
 /* eslint-enable no-unused-vars */
 
+const ALLOWED_CHANNELS = (process.env.SLACK_ALLOWED_CHANNELS || '').split(',');
+
 const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, messageId: string) => {
     const model = <IMergeRequestModel>{
         'rawMergeRequest': JSON.stringify(mr),
@@ -51,10 +53,14 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
 };
 
 // eslint-disable-next-line consistent-return
-const slashCommandHandler = async (bot: BotWorker, message: BotkitMessage): Promise<void> => {
+const slashCommandHandler = async (bot: BotWorker, message: BotkitMessage) => {
     const start = Date.now();
     logger.info(JSON.stringify(message));
     logger.info(message.command);
+
+    if (ALLOWED_CHANNELS.length > 0 && !ALLOWED_CHANNELS.includes(message.channel_name)) {
+        return slack.sendEphemeral(message, 'Não posso aceitar mensagens daqui :disappointed:');
+    }
 
     switch (message.command) {
         case '/code-review':
