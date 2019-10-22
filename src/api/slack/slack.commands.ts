@@ -8,6 +8,7 @@ import logger from '../../helpers/Logger';
 import factory from './slack.factory';
 import { MergeRequest, IMergeRequestModel } from '../mongo';
 import { service as gitlab, IGitlabMergeRequest } from '../gitlab';
+import Message from '../../helpers/Message';
 /* eslint-enable no-unused-vars */
 
 const ALLOWED_CHANNELS = (process.env.SLACK_ALLOWED_CHANNELS || '').split(',');
@@ -37,19 +38,42 @@ const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, mess
     return mergeRequest.save();
 };
 
-// TODO:
-// só receber de canais selecionados
-// receber mais coisas além do link (ex: #urgente)
+const validateMr = async (message: BotkitMessage, mr: IGitlabMergeRequest): Promise<void> => {
+    const hasMROnMongo = await MergeRequest.find({
+        'id': mr.detail.id,
+        'repository': mr.repository,
+    });
+
+    if (hasMROnMongo) throw new Message('Já estou cuidando desse MR :wink:');
+};
+
+// TODO: receive hashtags
 const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
-    const mr = await gitlab.getMergeRequestDetail(message.text);
+    try {
+        const mr = await gitlab.getMergeRequestDetail(message.text);
 
-    const slackMessage = factory.generateMergeRequestMessage(message.user, mr);
+        await validateMr(message, mr);
 
-    const { id } = await slack.mergeAdded(bot, message, slackMessage);
+        const slackMessage = factory.generateMergeRequestMessage(message.user, mr);
 
-    await saveOnMongo(mr, message, id);
+        const { id } = await slack.mergeAdded(bot, message, slackMessage);
 
-    if (!jobs.fetchMRUpdates.running) jobs.fetchMRUpdates.start();
+        const document = await saveOnMongo(mr, message, id);
+
+        if (!jobs.fetchMRUpdates.running) jobs.fetchMRUpdates.start();
+
+        return document;
+    } catch (err) {
+        if (err instanceof Message) {
+            logger.info(err);
+
+            return slack.sendEphemeral(message, err.message);
+        }
+
+        logger.error(err);
+
+        throw err;
+    }
 };
 
 // eslint-disable-next-line consistent-return
