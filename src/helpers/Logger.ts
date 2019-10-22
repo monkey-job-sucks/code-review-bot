@@ -38,16 +38,22 @@ class Logger {
         if (this.SHOULD_LOG_ON_SLACK) console.log();
     }
 
-    info(message: string) {
-        this.event.emit(ELevel.INFO, message);
+    info(message: string | any) {
+        if (typeof message === 'string') return this.event.emit(ELevel.INFO, message);
+
+        return this.event.emit(ELevel.INFO, JSON.stringify(message));
     }
 
-    warn(message: string) {
-        this.event.emit(ELevel.WANR, message);
+    warn(message: string | any) {
+        if (typeof message === 'string') return this.event.emit(ELevel.WANR, message);
+
+        return this.event.emit(ELevel.WANR, JSON.stringify(message));
     }
 
-    error(message: string) {
-        this.event.emit(ELevel.ERROR, message);
+    error(message: string | any) {
+        if (typeof message === 'string') return this.event.emit(ELevel.ERROR, message);
+
+        return this.event.emit(ELevel.ERROR, JSON.stringify(message));
     }
 }
 
