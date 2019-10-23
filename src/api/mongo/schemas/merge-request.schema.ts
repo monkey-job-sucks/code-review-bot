@@ -25,6 +25,7 @@ const schema = new Schema({
     'url': String,
     'repository': String,
     'id': String,
+    'iid': String,
     'created': actionLogSchema,
     'added': actionLogSchema,
     'merged': actionLogSchema,

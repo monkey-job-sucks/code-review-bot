@@ -20,6 +20,7 @@ const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, mess
         'url': message.text,
         'repository': mr.repository,
         'id': String(mr.detail.id),
+        'iid': String(mr.detail.iid),
         'created': {
             'at': new Date(mr.detail.created_at),
             'by': mr.detail.author.username,

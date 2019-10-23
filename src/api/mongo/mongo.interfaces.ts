@@ -7,6 +7,7 @@ export interface IMergeRequestModel extends Document {
     url: string;
     repository: string;
     id: string;
+    iid: string;
     created: IMergeRequestModelActionLog;
     added: IMergeRequestModelActionLog;
     merged?: IMergeRequestModelActionLog;
