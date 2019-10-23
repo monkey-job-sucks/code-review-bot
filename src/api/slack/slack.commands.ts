@@ -30,6 +30,10 @@ const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, mess
             'by': message.user,
         },
         'slack': {
+            'channel': {
+                'id': message.channel_id,
+                'name': message.channel_name,
+            },
             'messageId': String(messageId),
         },
     };

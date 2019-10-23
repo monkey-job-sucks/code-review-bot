@@ -30,4 +30,10 @@ interface IMergeRequestModelAnalytics {
 interface IMergeRequestModelSlack {
     messageId: string;
     reactions?: string[];
+    channel: IMergeRequestModelSlackChannel;
+}
+
+interface IMergeRequestModelSlackChannel {
+    id: string;
+    name: string;
 }

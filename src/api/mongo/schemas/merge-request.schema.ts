@@ -11,9 +11,15 @@ const actionLogSchema = new Schema({
     'by': String,
 }, { '_id': false });
 
+const slackChannelSchema = new Schema({
+    'id': String,
+    'name': String,
+}, { '_id': false });
+
 const slackSchema = new Schema({
     'messageId': String,
     'reactions': { 'type': [String], 'default': [] },
+    'channel': slackChannelSchema,
 }, { '_id': false });
 
 // TODO:
