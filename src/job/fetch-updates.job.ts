@@ -8,6 +8,8 @@ import { service as gitlab, IGitlabMergeRequestDetail, IGitlabMergeRequestReacti
 import logger from '../helpers/Logger';
 /* eslint-enable no-unused-vars */
 
+const { FETCH_MR_UPDATES_CRON } = process.env;
+
 interface IReviewers {
     reviewers: string[];
     hasOpenDiscussion: boolean;
@@ -168,23 +170,26 @@ const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDeta
 };
 
 const fetchMRUpdatesJob = {
-    'when': process.env.FETCH_MR_UPDATES_CRON,
+    'when': FETCH_MR_UPDATES_CRON,
     'function': async function fetchMRUpdates() {
-        logger.info('Starting job');
+        logger.info('[fetchMRUpdates] Starting job');
 
         const openMRs: IMergeRequestModel[] = await MergeRequest.find({
             'done': false,
         });
 
-        logger.info(`Got ${openMRs.length} mrs`);
+        logger.info(`[fetchMRUpdates] Got ${openMRs.length} mrs`);
 
-        if (openMRs.length === 0) return this.stop();
+        if (openMRs.length === 0) {
+            logger.info('[fetchMRUpdates] Stopping job');
+            return this.stop();
+        }
 
         const currentMRStatus = await Promise.all(openMRs.map(fetchSingleMR));
 
         await Promise.all(openMRs.map((mr, i) => updateMR(mr, currentMRStatus[i].detail)));
 
-        return logger.info('Job ended');
+        return logger.info('[fetchMRUpdates] Job ended');
     },
 };
 

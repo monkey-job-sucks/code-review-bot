@@ -59,7 +59,7 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
 
         await validateMr(message, mr);
 
-        const slackMessage = factory.generateMergeRequestMessage(message.user, mr);
+        const slackMessage = factory.generateAddedMergeRequestMessage(message.user, mr);
 
         const { id } = await slack.mergeAdded(bot, message, slackMessage);
 

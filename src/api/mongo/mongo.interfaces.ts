@@ -17,6 +17,11 @@ export interface IMergeRequestModel extends Document {
     analytics?: IMergeRequestModelAnalytics;
 }
 
+export interface IChannelMergeRequests {
+    _id: string;
+    mrs?: IMergeRequestModel[];
+}
+
 interface IMergeRequestModelActionLog {
     at: Date;
     by: string;

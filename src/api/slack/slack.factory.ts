@@ -1,15 +1,18 @@
 /* eslint-disable no-unused-vars */
+import * as moment from 'moment';
 import { MessageAttachment } from '@slack/web-api';
 
-import { IGitlabMergeRequest } from '../gitlab/gitlab.interfaces';
+import { IGitlabMergeRequest } from '../gitlab';
+import { IChannelMergeRequests } from '../mongo';
 /* eslint-enable no-unused-vars */
 
-// eslint-disable-next-line import/prefer-default-export
-const generateMergeRequestMessage = (
+moment.locale('pt-br');
+
+const generateAddedMergeRequestMessage = (
     user: string,
-    merge: IGitlabMergeRequest,
+    mr: IGitlabMergeRequest,
 ): MessageAttachment => {
-    const { repository, detail } = merge;
+    const { repository, detail } = mr;
 
     const title = `MR adicionado por <@${user}> em ${repository}`;
 
@@ -30,6 +33,21 @@ const generateMergeRequestMessage = (
     };
 };
 
+const generateDelayedMergeRequestsMessage = (delayedMrs: IChannelMergeRequests): string => {
+    const messages: string[] = [];
+
+    messages.push('<!channel>, temos MRs abertos ainda:');
+
+    delayedMrs.mrs.forEach((mr) => {
+        const openedSince = moment(mr.added.at).fromNow(true);
+
+        messages.push(`<${mr.url}|${mr.repository} #${mr.iid}> adicionado ${openedSince} atrás`);
+    });
+
+    return messages.join('\r');
+};
+
 export default {
-    generateMergeRequestMessage,
+    generateAddedMergeRequestMessage,
+    generateDelayedMergeRequestsMessage,
 };
