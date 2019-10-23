@@ -8,11 +8,10 @@ import { MergeRequest, IChannelMergeRequests } from '../api/mongo';
 import { service as slack, factory as slackFactory } from '../api/slack';
 /* eslint-enable no-unused-vars */
 
-const { NOTIFY_OPEN_MRS_CRON } = process.env;
-const NOTIFY_OPEN_MRS_DELAYED_IN_HOURS = Number(process.env.NOTIFY_OPEN_MRS_DELAYED_IN_HOURS);
+const { NOTIFY_OPEN_MRS_CRON, NOTIFY_OPEN_MRS_DELAYED_IN_HOURS } = process.env;
 
 const fetchDelayedMRs = (): Promise<IChannelMergeRequests[]> => {
-    const cutDate = moment().subtract(NOTIFY_OPEN_MRS_DELAYED_IN_HOURS, 'hours');
+    const cutDate = moment().subtract(Number(NOTIFY_OPEN_MRS_DELAYED_IN_HOURS), 'hours').toDate();
 
     return MergeRequest.aggregate()
         .match({ 'done': false, 'added.at': { '$gte': cutDate } })
