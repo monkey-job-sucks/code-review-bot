@@ -1,8 +1,8 @@
 /* eslint-disable import/no-cycle */
 import { CronJob } from 'cron';
 
-import notifyOpenMRs from './notify-open-mrs.job';
-import fetchMRUpdatesJob from './fetch-updates.job';
+import notifyOpenMRs from './notify-open-mrs/notify-open-mrs.job';
+import fetchMRUpdatesJob from './fetch-updates/fetch-updates.job';
 
 interface IJobs {
     notifyOpenMRs?: CronJob;
@@ -16,7 +16,7 @@ const { TIMEZONE } = process.env;
 
 const jobs: IJobs = {};
 
-if (fetchMRUpdatesJob.when) {
+if (fetchMRUpdatesJob.isEnabled()) {
     jobs.fetchMRUpdates = new CronJob(
         fetchMRUpdatesJob.when,
         fetchMRUpdatesJob.function,
@@ -26,7 +26,7 @@ if (fetchMRUpdatesJob.when) {
     );
 }
 
-if (notifyOpenMRs.when) {
+if (notifyOpenMRs.isEnabled()) {
     jobs.fetchMRUpdates = new CronJob(
         notifyOpenMRs.when,
         notifyOpenMRs.function,
