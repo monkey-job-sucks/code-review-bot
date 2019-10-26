@@ -7,6 +7,7 @@ export interface IMergeRequestModel extends Document {
     url: string;
     repository: string;
     id: string;
+    iid: string;
     created: IMergeRequestModelActionLog;
     added: IMergeRequestModelActionLog;
     merged?: IMergeRequestModelActionLog;
@@ -14,6 +15,11 @@ export interface IMergeRequestModel extends Document {
     slack: IMergeRequestModelSlack;
     done?: boolean;
     analytics?: IMergeRequestModelAnalytics;
+}
+
+export interface IChannelMergeRequests {
+    _id: string;
+    mrs?: IMergeRequestModel[];
 }
 
 interface IMergeRequestModelActionLog {
@@ -29,4 +35,10 @@ interface IMergeRequestModelAnalytics {
 interface IMergeRequestModelSlack {
     messageId: string;
     reactions?: string[];
+    channel: IMergeRequestModelSlackChannel;
+}
+
+interface IMergeRequestModelSlackChannel {
+    id: string;
+    name: string;
 }

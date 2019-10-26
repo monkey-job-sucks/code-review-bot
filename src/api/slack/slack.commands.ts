@@ -20,6 +20,7 @@ const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, mess
         'url': message.text,
         'repository': mr.repository,
         'id': String(mr.detail.id),
+        'iid': String(mr.detail.iid),
         'created': {
             'at': new Date(mr.detail.created_at),
             'by': mr.detail.author.username,
@@ -29,6 +30,10 @@ const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, mess
             'by': message.user,
         },
         'slack': {
+            'channel': {
+                'id': message.channel_id,
+                'name': message.channel_name,
+            },
             'messageId': String(messageId),
         },
     };
@@ -39,10 +44,12 @@ const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, mess
 };
 
 const validateMr = async (message: BotkitMessage, mr: IGitlabMergeRequest): Promise<void> => {
-    const hasMROnMongo = await MergeRequest.find({
+    const document = await MergeRequest.find({
         'id': mr.detail.id,
         'repository': mr.repository,
     });
+
+    const hasMROnMongo = document.length > 0;
 
     if (hasMROnMongo) throw new Message('Já estou cuidando desse MR :wink:');
 };
@@ -54,7 +61,7 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
 
         await validateMr(message, mr);
 
-        const slackMessage = factory.generateMergeRequestMessage(message.user, mr);
+        const slackMessage = factory.generateAddedMergeRequestMessage(message.user, mr);
 
         const { id } = await slack.mergeAdded(bot, message, slackMessage);
 

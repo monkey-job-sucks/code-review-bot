@@ -7,7 +7,6 @@ import commands from './slack.commands';
 
 interface ISlackColors {
     added: string;
-    delayed: string;
 }
 
 // TODO:
@@ -35,7 +34,6 @@ class Slack {
         this.verificationToken = process.env.SLACK_VERIFICATION_TOKEN;
         this.colors = {
             'added': process.env.SLACK_COLOR_MR_ADDED || 'good',
-            'delayed': process.env.SLACK_COLOR_MR_DELAYED || 'warning',
         };
 
         this.adapter = new SlackAdapter({
@@ -136,6 +134,15 @@ class Slack {
         return api.chat.postEphemeral({
             'text': text,
             'user': message.user,
+            'channel': message.channel,
+        });
+    }
+
+    public async mergeDelayed(message: BotkitMessage, text: string) {
+        const api = await this.adapter.getAPI(message);
+
+        return api.chat.postMessage({
+            'text': text,
             'channel': message.channel,
         });
     }

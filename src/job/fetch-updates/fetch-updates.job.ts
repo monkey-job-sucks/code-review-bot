@@ -2,16 +2,21 @@
 /* eslint-disable no-unused-vars */
 import * as _ from 'lodash';
 
-import { MergeRequest, IMergeRequestModel } from '../api/mongo';
-import { service as slack, helper as slackHelper } from '../api/slack';
-import { service as gitlab, IGitlabMergeRequestDetail, IGitlabMergeRequestReaction } from '../api/gitlab';
-import logger from '../helpers/Logger';
+import { MergeRequest, IMergeRequestModel } from '../../api/mongo';
+import { service as slack, helper as slackHelper } from '../../api/slack';
+import { service as gitlab, IGitlabMergeRequestDetail, IGitlabMergeRequestReaction } from '../../api/gitlab';
+import logger from '../../helpers/Logger';
+import { IJobConfig } from '../job.interface';
 /* eslint-enable no-unused-vars */
+
+const { FETCH_MR_UPDATES_CRON } = process.env;
 
 interface IReviewers {
     reviewers: string[];
     hasOpenDiscussion: boolean;
 }
+
+const fetchOpenMRs = () => MergeRequest.find({ 'done': false });
 
 const fetchSingleMR = async (mr: IMergeRequestModel) => gitlab.getMergeRequestDetail(mr.url);
 
@@ -167,24 +172,34 @@ const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDeta
     }
 };
 
-const fetchMRUpdatesJob = {
-    'when': process.env.FETCH_MR_UPDATES_CRON,
+const updateOpenMRs = async (): Promise<number> => {
+    const openMRs: IMergeRequestModel[] = await fetchOpenMRs();
+
+    if (openMRs.length === 0) return 0;
+
+    const currentMRStatus = await Promise.all(openMRs.map(fetchSingleMR));
+
+    await Promise.all(openMRs.map((mr, i) => updateMR(mr, currentMRStatus[i].detail)));
+
+    return openMRs.length;
+};
+
+const fetchMRUpdatesJob: IJobConfig = {
+    'isEnabled': () => !!FETCH_MR_UPDATES_CRON,
+    'when': FETCH_MR_UPDATES_CRON,
     'function': async function fetchMRUpdates() {
-        logger.info('Starting job');
+        logger.info('[fetchMRUpdates] Starting job');
 
-        const openMRs: IMergeRequestModel[] = await MergeRequest.find({
-            'done': false,
-        });
+        const openMRsAmount = await updateOpenMRs();
 
-        logger.info(`Got ${openMRs.length} mrs`);
+        logger.info(`[fetchMRUpdates] Got ${openMRsAmount} mrs`);
 
-        if (openMRs.length === 0) return this.stop();
+        if (openMRsAmount === 0) {
+            logger.info('[fetchMRUpdates] Stopping job');
+            return this.stop();
+        }
 
-        const currentMRStatus = await Promise.all(openMRs.map(fetchSingleMR));
-
-        await Promise.all(openMRs.map((mr, i) => updateMR(mr, currentMRStatus[i].detail)));
-
-        return logger.info('Job ended');
+        return logger.info('[fetchMRUpdates] Job ended');
     },
 };
 

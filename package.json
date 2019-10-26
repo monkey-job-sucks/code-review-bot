@@ -5,7 +5,7 @@
   "main": "dist/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/** --ext .js,.tsx,.ts",
+    "lint": "eslint src/** --ext .ts",
     "build": "tsc",
     "dev": "ts-node src/app.ts",
     "local": "docker-compose -f docker-compose-local.yml up"
@@ -45,6 +45,7 @@
     "botkit": "^4.5.0",
     "cron": "^1.7.2",
     "lodash": "^4.17.15",
+    "moment": "^2.24.0",
     "mongoose": "^5.7.1"
   }
 }
