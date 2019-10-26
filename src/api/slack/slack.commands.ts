@@ -44,10 +44,12 @@ const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, mess
 };
 
 const validateMr = async (message: BotkitMessage, mr: IGitlabMergeRequest): Promise<void> => {
-    const hasMROnMongo = await MergeRequest.find({
+    const document = await MergeRequest.find({
         'id': mr.detail.id,
         'repository': mr.repository,
     });
+
+    const hasMROnMongo = document.length > 0;
 
     if (hasMROnMongo) throw new Message('Já estou cuidando desse MR :wink:');
 };
