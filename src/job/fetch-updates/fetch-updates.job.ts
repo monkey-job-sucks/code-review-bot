@@ -194,11 +194,6 @@ const fetchMRUpdatesJob: IJobConfig = {
 
         logger.info(`[fetchMRUpdates] Got ${openMRsAmount} mrs`);
 
-        if (openMRsAmount === 0) {
-            logger.info('[fetchMRUpdates] Stopping job');
-            return this.stop();
-        }
-
         return logger.info('[fetchMRUpdates] Job ended');
     },
 };

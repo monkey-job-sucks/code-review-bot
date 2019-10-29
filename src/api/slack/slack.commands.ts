@@ -67,8 +67,6 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
 
         const document = await saveOnMongo(mr, message, id);
 
-        if (!jobs.fetchMRUpdates.running) jobs.fetchMRUpdates.start();
-
         return document;
     } catch (err) {
         if (err instanceof Message) {
