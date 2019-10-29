@@ -9,7 +9,7 @@ import logger from '../../helpers/Logger';
 import { IJobConfig } from '../job.interface';
 /* eslint-enable no-unused-vars */
 
-const { FETCH_MR_UPDATES_CRON } = process.env;
+const { FETCH_MR_UPDATES_CRON, CLOSED_MR_REACTION } = process.env;
 
 interface IReviewers {
     reviewers: string[];
@@ -116,8 +116,6 @@ const updateReviewers = async (mr: IMergeRequestModel): Promise<string[]> => {
 
 const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDetail) => {
     try {
-        let slackReactions: string[] = [];
-
         /* eslint-disable no-param-reassign */
         // valida se mr pode ser fechado
         switch (current.state) {
@@ -127,7 +125,6 @@ const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDeta
                     'at': new Date(current.merged_at),
                     'by': current.merged_by.username,
                 };
-                slackReactions.push('heavy_check_mark');
                 break;
             case 'closed':
                 mr.done = true;
@@ -135,7 +132,6 @@ const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDeta
                     'at': new Date(current.closed_at),
                     'by': current.closed_by.username,
                 };
-                slackReactions.push('heavy_check_mark');
                 break;
             default:
                 break;
@@ -146,24 +142,30 @@ const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDeta
             updateReviewers(mr),
         ]);
 
-        // add reactions only if mr is still open
-        if (!mr.done) {
-            slackReactions = [
-                ...slackReactions,
-                ...upvoteReactions,
-                ...discussionReaction,
-            ];
-        }
+        const slackReactions = [...discussionReaction, ...upvoteReactions];
 
+        // always like before close
         if (slackReactions.length > 0) {
             await slack.addReaction(
                 JSON.parse(mr.rawSlackMessage),
                 mr.slack.messageId,
                 slackReactions,
             );
-
-            mr.slack.reactions = [...mr.slack.reactions, ...slackReactions];
         }
+
+        if (mr.done) {
+            const reaction = CLOSED_MR_REACTION || 'heavy_check_mark';
+
+            await slack.addReaction(
+                JSON.parse(mr.rawSlackMessage),
+                mr.slack.messageId,
+                reaction,
+            );
+
+            slackReactions.push(reaction);
+        }
+
+        mr.slack.reactions = [...mr.slack.reactions, ...slackReactions];
         /* eslint-enable no-param-reassign */
 
         return mr.save();
