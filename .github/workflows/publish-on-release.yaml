@@ -1,0 +1,20 @@
+name: Publish on new release
+
+on:
+  release: 
+    types: [published]
+
+jobs:
+  publish:
+    name: Publish Release Tag on Dockerhub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: ${{ secrets.DOCKERHUB_REPOSITORY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tag_names: true

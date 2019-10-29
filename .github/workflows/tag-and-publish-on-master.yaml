@@ -1,0 +1,41 @@
+name: Tag and publish on push in master
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  tag:
+    name: Generate Tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Create new tag
+        uses: anothrNick/github-tag-action@master
+        env:
+          REPO_OWNER: monkey-job-sucks
+          DEFAULT_BUMP: minor
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  draft_release:
+    name: Generate Draft Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: toolmantim/release-drafter@v5.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  publish:
+    name: Publish Latest on Dockerhub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Publish to Registry
+        uses: mr-smithers-excellent/docker-build-push@v1.0
+        with:
+          tag: latest
+          registry: docker.io
+          image: ${{ secrets.DOCKERHUB_REPOSITORY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
