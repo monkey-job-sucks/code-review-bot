@@ -16,28 +16,28 @@ const { TIMEZONE } = process.env;
 
 const jobs: IJobs = {};
 
-if (fetchMRUpdatesJob.isEnabled()) {
-    jobs.fetchMRUpdates = new CronJob(
-        fetchMRUpdatesJob.when,
-        fetchMRUpdatesJob.function,
-        ON_COMPLETE,
-        AUTO_START,
-        TIMEZONE,
-    );
+const start = (): IJobs => {
+    if (fetchMRUpdatesJob.isEnabled()) {
+        jobs.fetchMRUpdates = new CronJob(
+            fetchMRUpdatesJob.when,
+            fetchMRUpdatesJob.function,
+            ON_COMPLETE,
+            AUTO_START,
+            TIMEZONE,
+        );
+    }
 
-    jobs.fetchMRUpdates.start();
-}
+    if (notifyOpenMRs.isEnabled()) {
+        jobs.notifyOpenMRs = new CronJob(
+            notifyOpenMRs.when,
+            notifyOpenMRs.function,
+            ON_COMPLETE,
+            AUTO_START,
+            TIMEZONE,
+        );
+    }
 
-if (notifyOpenMRs.isEnabled()) {
-    jobs.notifyOpenMRs = new CronJob(
-        notifyOpenMRs.when,
-        notifyOpenMRs.function,
-        ON_COMPLETE,
-        AUTO_START,
-        TIMEZONE,
-    );
+    return jobs;
+};
 
-    jobs.notifyOpenMRs.start();
-}
-
-export default jobs;
+export default { start };
