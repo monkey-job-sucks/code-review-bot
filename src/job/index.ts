@@ -30,7 +30,7 @@ if (fetchMRUpdatesJob.isEnabled()) {
 }
 
 if (notifyOpenMRs.isEnabled()) {
-    jobs.fetchMRUpdates = new CronJob(
+    jobs.notifyOpenMRs = new CronJob(
         notifyOpenMRs.when,
         notifyOpenMRs.function,
         ON_COMPLETE,
