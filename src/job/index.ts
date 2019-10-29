@@ -11,6 +11,7 @@ interface IJobs {
 
 const AUTO_START = true;
 const ON_COMPLETE = () => {};
+const CONTEXT = null;
 
 const { TIMEZONE } = process.env;
 
@@ -23,6 +24,8 @@ if (fetchMRUpdatesJob.isEnabled()) {
         ON_COMPLETE,
         AUTO_START,
         TIMEZONE,
+        CONTEXT,
+        AUTO_START,
     );
 }
 
@@ -33,6 +36,8 @@ if (notifyOpenMRs.isEnabled()) {
         ON_COMPLETE,
         AUTO_START,
         TIMEZONE,
+        CONTEXT,
+        AUTO_START,
     );
 }
 
