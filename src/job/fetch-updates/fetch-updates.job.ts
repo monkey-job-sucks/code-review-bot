@@ -143,7 +143,7 @@ const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDeta
         ]);
 
         const slackReactions = [...discussionReaction, ...upvoteReactions];
-        
+
         // always like before close
         if (slackReactions.length > 0) {
             await slack.addReaction(
