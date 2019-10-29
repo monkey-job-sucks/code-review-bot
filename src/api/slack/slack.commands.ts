@@ -2,7 +2,6 @@
 /* eslint-disable no-unused-vars */
 import { BotWorker, BotkitMessage } from 'botkit';
 
-import jobs from '../../job';
 import slack from './slack.service';
 import logger from '../../helpers/Logger';
 import factory from './slack.factory';
