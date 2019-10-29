@@ -49,11 +49,6 @@ const notifyOpenMRsjob: IJobConfig = {
 
         logger.info(`[notifyOpenMRs] Got ${delayedMRsAmount} mrs`);
 
-        if (delayedMRsAmount === 0) {
-            logger.info('[notifyOpenMRs] Stopping job');
-            return this.stop();
-        }
-
         return logger.info('[notifyOpenMRs] Job ended');
     },
 };
