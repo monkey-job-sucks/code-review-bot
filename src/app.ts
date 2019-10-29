@@ -5,6 +5,5 @@ import job from './job';
 (async () => {
     await slackService.load();
     job.start();
-
     logger.info('UP');
 })();
