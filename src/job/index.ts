@@ -11,7 +11,7 @@ interface IJobs {
 
 const AUTO_START = true;
 const ON_COMPLETE = () => {};
-const CONTEXT = null;
+const CONTEXT: string = null;
 
 const { TIMEZONE } = process.env;
 
