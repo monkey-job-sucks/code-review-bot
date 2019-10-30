@@ -4,7 +4,7 @@ import { EventEmitter } from 'events';
 enum ELevel {
     DEBUG = 'debug',
     INFO = 'info',
-    WANR = 'warn',
+    WARN = 'warn',
     ERROR = 'error',
 }
 /* eslint-enable no-unused-vars */
@@ -27,8 +27,8 @@ class Logger {
             this.log(ELevel.INFO, message);
         });
 
-        this.event.on(ELevel.WANR, (message: string) => {
-            this.log(ELevel.WANR, message);
+        this.event.on(ELevel.WARN, (message: string) => {
+            this.log(ELevel.WARN, message);
         });
 
         this.event.on(ELevel.ERROR, (message: string) => {
