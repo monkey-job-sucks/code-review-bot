@@ -144,30 +144,29 @@ const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDeta
             updateReviewers(mr),
         ]);
 
-        const slackReactions = [...discussionReaction, ...upvoteReactions];
+        const newGitReactions = discussionReaction.concat(upvoteReactions);
 
         // always like before close
-        if (slackReactions.length > 0) {
+        if (newGitReactions.length > 0) {
             await slack.addReaction(
                 JSON.parse(mr.rawSlackMessage),
                 mr.slack.messageId,
-                slackReactions,
+                newGitReactions,
             );
         }
+
+        // add to document after react on slack
+        mr.slack.reactions = mr.slack.reactions.concat(newGitReactions);
 
         if (mr.done && !mr.slack.reactions.includes(CLOSED_MR_REACTION)) {
-            const reaction = CLOSED_MR_REACTION || 'heavy_check_mark';
-
             await slack.addReaction(
                 JSON.parse(mr.rawSlackMessage),
                 mr.slack.messageId,
-                reaction,
+                CLOSED_MR_REACTION,
             );
 
-            slackReactions.push(reaction);
+            mr.slack.reactions.push(CLOSED_MR_REACTION);
         }
-
-        mr.slack.reactions = [...mr.slack.reactions, ...slackReactions];
         /* eslint-enable no-param-reassign */
 
         return mr.save();
