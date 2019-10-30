@@ -14,7 +14,7 @@ const generateAddedMergeRequestMessage = (
 ): MessageAttachment => {
     const { repository, detail } = mr;
 
-    const title = `MR #${detail.iid} adicionado por <@${user}> em ${repository}`;
+    const title = `<@${user}> adicionou o MR #${detail.iid} ${repository}`;
 
     return {
         'title': title,
