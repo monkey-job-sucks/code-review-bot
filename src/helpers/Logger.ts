@@ -2,9 +2,9 @@ import { EventEmitter } from 'events';
 
 /* eslint-disable no-unused-vars */
 enum ELevel {
-    DEBUG = 'info',
+    DEBUG = 'debug',
     INFO = 'info',
-    WANR = 'warn',
+    WARN = 'warn',
     ERROR = 'error',
 }
 /* eslint-enable no-unused-vars */
@@ -27,8 +27,8 @@ class Logger {
             this.log(ELevel.INFO, message);
         });
 
-        this.event.on(ELevel.WANR, (message: string) => {
-            this.log(ELevel.WANR, message);
+        this.event.on(ELevel.WARN, (message: string) => {
+            this.log(ELevel.WARN, message);
         });
 
         this.event.on(ELevel.ERROR, (message: string) => {
@@ -37,10 +37,14 @@ class Logger {
     }
 
     private log(level: ELevel, message: string) {
-        console[level](message);
+        const logKey = level === ELevel.DEBUG ? ELevel.INFO : level;
+
+        console[logKey](message);
+
+        const canSendToSlack = this.SHOULD_LOG_ON_SLACK && level !== ELevel.DEBUG;
 
         // TODO: implementar chamada ao slack
-        if (ELevel.DEBUG !== level && this.SHOULD_LOG_ON_SLACK) console.log();
+        if (canSendToSlack) console.log();
     }
 
     debug(message: string | any) {
@@ -56,9 +60,9 @@ class Logger {
     }
 
     warn(message: string | any) {
-        if (typeof message === 'string') return this.event.emit(ELevel.WANR, message);
+        if (typeof message === 'string') return this.event.emit(ELevel.WARN, message);
 
-        return this.event.emit(ELevel.WANR, JSON.stringify(message));
+        return this.event.emit(ELevel.WARN, JSON.stringify(message));
     }
 
     error(message: string | any) {
