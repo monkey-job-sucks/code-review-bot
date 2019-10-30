@@ -16,20 +16,9 @@ const generateAddedMergeRequestMessage = (
 
     const title = `MR #${detail.iid} adicionado por <@${user}> em ${repository}`;
 
-    const fields = [{
-        'title': 'Origem',
-        'value': detail.source_branch,
-        'short': true,
-    }, {
-        'title': 'Destino',
-        'value': detail.target_branch,
-        'short': true,
-    }];
-
     return {
         'title': title,
         'title_link': detail.web_url,
-        'fields': fields,
     };
 };
 
