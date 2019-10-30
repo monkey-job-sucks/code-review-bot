@@ -36,16 +36,15 @@ class Logger {
         });
     }
 
-    // eslint-disable-next-line consistent-return
     private log(level: ELevel, message: string) {
-        if (ELevel.DEBUG === level) {
-            return console[ELevel.INFO](message);
-        }
+        const logKey = level === ELevel.DEBUG ? ELevel.INFO : level;
 
-        console[level](message);
+        console[logKey](message);
+
+        const canSendToSlack = this.SHOULD_LOG_ON_SLACK && level !== ELevel.DEBUG;
 
         // TODO: implementar chamada ao slack
-        if (this.SHOULD_LOG_ON_SLACK) console.log();
+        if (canSendToSlack) console.log();
     }
 
     debug(message: string | any) {
@@ -61,9 +60,9 @@ class Logger {
     }
 
     warn(message: string | any) {
-        if (typeof message === 'string') return this.event.emit(ELevel.WANR, message);
+        if (typeof message === 'string') return this.event.emit(ELevel.WARN, message);
 
-        return this.event.emit(ELevel.WANR, JSON.stringify(message));
+        return this.event.emit(ELevel.WARN, JSON.stringify(message));
     }
 
     error(message: string | any) {
