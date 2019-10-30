@@ -71,13 +71,15 @@ const fetchDiscussions = async (mr: IMergeRequestModel): Promise<IReviewers> => 
     const userInteractions = discussions.filter((discussion) => !discussion.individual_note);
 
     // get username of first discussion on each thread
-    const reviewers = userInteractions.map((discussion) => discussion.notes[0].author.username);
+    const reviewers = new Set(
+        userInteractions.map((discussion) => discussion.notes[0].author.username),
+    );
 
     const hasOpenDiscussion = userInteractions
         .some((discussion) => discussion.notes.some((note) => note.resolvable && !note.resolved));
 
     return {
-        'reviewers': reviewers,
+        'reviewers': [...reviewers],
         'hasOpenDiscussion': hasOpenDiscussion,
     };
 };
