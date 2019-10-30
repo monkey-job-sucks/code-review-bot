@@ -9,7 +9,7 @@ import logger from '../../helpers/Logger';
 import { IJobConfig } from '../job.interface';
 /* eslint-enable no-unused-vars */
 
-const { FETCH_MR_UPDATES_CRON, CLOSED_MR_REACTION } = process.env;
+const CLOSED_MR_REACTION = process.env.CLOSED_MR_REACTION || 'heavy_check_mark';
 
 interface IReviewers {
     reviewers: string[];
@@ -18,7 +18,7 @@ interface IReviewers {
 
 const fetchOpenMRs = () => MergeRequest.find({ 'done': false });
 
-const fetchSingleMR = async (mr: IMergeRequestModel) => gitlab.getMergeRequestDetail(mr.url);
+const fetchSingleMR = (mr: IMergeRequestModel) => gitlab.getMergeRequestDetail(mr.url);
 
 const fetchUpvoters = async (mr: IMergeRequestModel): Promise<string[]> => {
     const reactions: IGitlabMergeRequestReaction[] = await gitlab.getMergeRequestReactions(mr.url);
@@ -153,7 +153,7 @@ const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDeta
             );
         }
 
-        if (mr.done) {
+        if (mr.done && !mr.slack.reactions.includes(CLOSED_MR_REACTION)) {
             const reaction = CLOSED_MR_REACTION || 'heavy_check_mark';
 
             await slack.addReaction(
@@ -170,6 +170,8 @@ const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDeta
 
         return mr.save();
     } catch (err) {
+        logger.info(mr);
+
         return logger.error(err);
     }
 };
@@ -187,16 +189,16 @@ const updateOpenMRs = async (): Promise<number> => {
 };
 
 const fetchMRUpdatesJob: IJobConfig = {
-    'isEnabled': () => !!FETCH_MR_UPDATES_CRON,
-    'when': FETCH_MR_UPDATES_CRON,
+    'isEnabled': () => !!process.env.FETCH_MR_UPDATES_CRON,
+    'when': process.env.FETCH_MR_UPDATES_CRON,
     'function': async function fetchMRUpdates() {
-        logger.info('[fetchMRUpdates] Starting job');
+        logger.debug('[fetchMRUpdates] Starting job');
 
         const openMRsAmount = await updateOpenMRs();
 
-        logger.info(`[fetchMRUpdates] Got ${openMRsAmount} mrs`);
+        logger.debug(`[fetchMRUpdates] Got ${openMRsAmount} mrs`);
 
-        return logger.info('[fetchMRUpdates] Job ended');
+        return logger.debug('[fetchMRUpdates] Job ended');
     },
 };
 

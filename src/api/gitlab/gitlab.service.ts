@@ -9,6 +9,7 @@ import {
     IGitlabMergeRequestReaction,
     IGitlabMergeRequestDiscussion,
 } from './gitlab.interfaces';
+import Message from '../../helpers/Message';
 /* eslint-enable no-unused-vars */
 
 // TODO:
@@ -38,21 +39,41 @@ class Gitlab {
 
     // TODO: aceitar url ou repository e id
     public async getMergeRequestDetail(url: string): Promise<IGitlabMergeRequest> {
-        const info: IGitlabMergeRequestUrlInfo = helper.getUrlInfo(url);
+        let info: IGitlabMergeRequestUrlInfo;
+
+        try {
+            info = helper.getUrlInfo(url);
+
+            if (!info.id || !info.repository) {
+                throw new Message('Não consegui identificar o mr nesse link :disappointed:');
+            }
+        } catch (err) {
+            if (err instanceof Message) throw err;
+
+            throw new Message('Tive um problema para identificar o mr nesse link :disappointed:');
+        }
 
         const encodedRepository = encodeURIComponent(info.repository);
 
-        const response = await this.api({
-            'method': 'GET',
-            'url': `/projects/${encodedRepository}/merge_requests/${info.id}/${EGitlabMergeRequestResource.DETAIL}`,
-        });
+        try {
+            const response = await this.api({
+                'method': 'GET',
+                'url': `/projects/${encodedRepository}/merge_requests/${info.id}/${EGitlabMergeRequestResource.DETAIL}`,
+            });
 
-        const merge = {
-            'repository': info.repository,
-            'detail': response.data,
-        };
+            const merge = {
+                'repository': info.repository,
+                'detail': response.data,
+            };
 
-        return merge;
+            return merge;
+        } catch (err) {
+            if (err.response && err.response.status === 404) {
+                throw new Message('Não encontrei esse mr, o link está certo? :thinking_face:');
+            }
+
+            throw new Message('Tive um problema pra buscar os detalhes desse mr :disappointed:');
+        }
     }
 
     // TODO: aceitar url ou repository e id
