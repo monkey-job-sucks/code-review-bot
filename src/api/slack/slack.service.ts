@@ -1,7 +1,9 @@
-/* eslint-disable import/no-cycle, no-unused-vars */
+/* eslint-disable import/no-cycle */
+/* eslint-disable no-unused-vars */
 import { Botkit, BotkitMessage, BotWorker } from 'botkit';
 import { SlackAdapter, SlackEventMiddleware, SlackMessageTypeMiddleware } from 'botbuilder-adapter-slack';
-/* eslint-enabled import/no-cycle, no-unused-vars */
+import { FilesUploadArguments } from '@slack/web-api';
+/* eslint-enabled no-unused-vars */
 
 import commands from './slack.commands';
 
@@ -138,12 +140,24 @@ class Slack {
         });
     }
 
-    public async mergeDelayed(message: BotkitMessage, text: string) {
+    public async sendMessage(message: BotkitMessage, text: string) {
         const api = await this.adapter.getAPI(message);
 
         return api.chat.postMessage({
             'text': text,
             'channel': message.channel,
+        });
+    }
+
+    public async sendSnippet(
+        message: BotkitMessage, text: string, fileProperties?: FilesUploadArguments,
+    ) {
+        const api = await this.adapter.getAPI(message);
+
+        return api.files.upload({
+            'content': text,
+            'channels': message.channel,
+            ...fileProperties,
         });
     }
 }

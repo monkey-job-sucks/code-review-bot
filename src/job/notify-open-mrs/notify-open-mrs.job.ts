@@ -26,7 +26,7 @@ const notifyChannel = (channelMRs: IChannelMergeRequests) => {
     const message = slackFactory.generateDelayedMergeRequestsMessage(channelMRs);
 
     // eslint-disable-next-line no-underscore-dangle
-    return slack.mergeDelayed({ 'channel': channelMRs._id } as BotkitMessage, message);
+    return slack.sendMessage({ 'channel': channelMRs._id } as BotkitMessage, message);
 };
 
 const notifyDelayedMRs = async (): Promise<number> => {
