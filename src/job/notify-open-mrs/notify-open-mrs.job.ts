@@ -16,7 +16,7 @@ const fetchDelayedMRs = (): Promise<IChannelMergeRequests[]> => {
     const cutDate = moment().subtract(hours, 'hours').toDate();
 
     return MergeRequest.aggregate()
-        .match({ 'done': false, 'added.at': { '$gte': cutDate } })
+        .match({ 'done': false, 'added.at': { '$lte': cutDate } })
         .sort({ 'added.at': 1 })
         .group({ '_id': '$slack.channel.id', 'mrs': { '$push': '$$ROOT' } })
         .exec();
