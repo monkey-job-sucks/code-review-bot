@@ -43,7 +43,7 @@ const randomizeThumbsup = (current: string[], amount: number): string[] => {
     const newReactionsToFetch = amount - current.length;
     const newReactions = unusedReactions.slice(0, newReactionsToFetch);
 
-    return current.concat(newReactions);
+    return newReactions;
 };
 
 export default {
