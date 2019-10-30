@@ -102,7 +102,7 @@ const updateReviewers = async (mr: IMergeRequestModel): Promise<string[]> => {
     }
 
     // otherwise remove it
-    if (mr.slack.reactions.includes('speech_balloon')) {
+    if (!discussions.hasOpenDiscussion && mr.slack.reactions.includes('speech_balloon')) {
         // eslint-disable-next-line no-param-reassign
         mr.slack.reactions = mr.slack.reactions.filter((reaction) => reaction !== 'speech_balloon');
 
