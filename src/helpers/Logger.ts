@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 
 /* eslint-disable no-unused-vars */
 enum ELevel {
+    DEBUG = 'info',
     INFO = 'info',
     WANR = 'warn',
     ERROR = 'error',
@@ -17,6 +18,10 @@ class Logger {
         this.SHOULD_LOG_ON_SLACK = process.env.SHOULD_LOG_ON_SLACK === 'true';
 
         this.event = new EventEmitter();
+
+        this.event.on(ELevel.DEBUG, (message: string) => {
+            this.log(ELevel.DEBUG, message);
+        });
 
         this.event.on(ELevel.INFO, (message: string) => {
             this.log(ELevel.INFO, message);
@@ -35,7 +40,13 @@ class Logger {
         console[level](message);
 
         // TODO: implementar chamada ao slack
-        if (this.SHOULD_LOG_ON_SLACK) console.log();
+        if (ELevel.DEBUG !== level && this.SHOULD_LOG_ON_SLACK) console.log();
+    }
+
+    debug(message: string | any) {
+        if (typeof message === 'string') return this.event.emit(ELevel.DEBUG, message);
+
+        return this.event.emit(ELevel.DEBUG, JSON.stringify(message));
     }
 
     info(message: string | any) {
