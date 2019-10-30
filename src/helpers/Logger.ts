@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 
 /* eslint-disable no-unused-vars */
 enum ELevel {
-    DEBUG = 'info',
+    DEBUG = 'debug',
     INFO = 'info',
     WANR = 'warn',
     ERROR = 'error',
@@ -36,11 +36,16 @@ class Logger {
         });
     }
 
+    // eslint-disable-next-line consistent-return
     private log(level: ELevel, message: string) {
+        if (ELevel.DEBUG === level) {
+            return console[ELevel.INFO](message);
+        }
+
         console[level](message);
 
         // TODO: implementar chamada ao slack
-        if (ELevel.DEBUG !== level && this.SHOULD_LOG_ON_SLACK) console.log();
+        if (this.SHOULD_LOG_ON_SLACK) console.log();
     }
 
     debug(message: string | any) {
