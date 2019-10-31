@@ -25,7 +25,7 @@ const generateAddedMergeRequestMessage = (
 const generateDelayedMergeRequestsMessage = (delayedMrs: IChannelMergeRequests): string => {
     const messages: string[] = [];
 
-    messages.push('<!channel>, ainda temos MRs abertos:');
+    messages.push('<!here>, ainda temos MRs abertos:');
 
     delayedMrs.mrs.forEach((mr) => {
         const openedSince = moment(mr.added.at).fromNow();
