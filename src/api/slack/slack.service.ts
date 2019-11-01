@@ -71,42 +71,50 @@ class Slack {
 
     public async addReaction(
         message: BotkitMessage, timestamp: string, emoji: string | string[],
-    ): Promise<any> {
+    ): Promise<void> {
         const api = await this.adapter.getAPI(message);
 
         if (typeof emoji === 'string') {
-            return api.reactions.add({
+            await api.reactions.add({
                 'name': emoji,
                 'timestamp': timestamp,
                 'channel': message.channel,
             });
+        } else {
+            /* eslint-disable no-restricted-syntax, no-await-in-loop */
+            for (const e of emoji) {
+                await api.reactions.add({
+                    'name': e,
+                    'timestamp': timestamp,
+                    'channel': message.channel,
+                });
+            }
+            /* eslint-enable no-restricted-syntax, no-await-in-loop */
         }
-
-        return Promise.all(emoji.map((e) => api.reactions.add({
-            'name': e,
-            'timestamp': timestamp,
-            'channel': message.channel,
-        })));
     }
 
     public async removeReaction(
         message: BotkitMessage, timestamp: string, emoji: string | string[],
-    ): Promise<any> {
+    ): Promise<void> {
         const api = await this.adapter.getAPI(message);
 
         if (typeof emoji === 'string') {
-            return api.reactions.remove({
+            await api.reactions.remove({
                 'name': emoji,
                 'timestamp': timestamp,
                 'channel': message.channel,
             });
+        } else {
+            /* eslint-disable no-restricted-syntax, no-await-in-loop */
+            for (const e of emoji) {
+                await api.reactions.remove({
+                    'name': e,
+                    'timestamp': timestamp,
+                    'channel': message.channel,
+                });
+            }
+            /* eslint-enable no-restricted-syntax, no-await-in-loop */
         }
-
-        return Promise.all(emoji.map((e) => api.reactions.remove({
-            'name': e,
-            'timestamp': timestamp,
-            'channel': message.channel,
-        })));
     }
 
     public async updateMessage(message: BotkitMessage, timestamp: string, newText: string) {
