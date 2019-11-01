@@ -1,177 +1,64 @@
 /* eslint-disable import/no-cycle */
-/* eslint-disable no-unused-vars */
-import * as _ from 'lodash';
-
-import { MergeRequest, IMergeRequestModel } from '../../api/mongo';
-import { service as slack, helper as slackHelper } from '../../api/slack';
-import { service as gitlab, IGitlabMergeRequestDetail, IGitlabMergeRequestReaction } from '../../api/gitlab';
+import helper from './fetch-updates.helper';
 import logger from '../../helpers/Logger';
+import { service as slack } from '../../api/slack';
+
+/* eslint-disable no-unused-vars */
 import { IJobConfig } from '../job.interface';
+import { IReactions } from './fetch-updates.interface';
+import { MergeRequest, IMergeRequestModel } from '../../api/mongo';
+import { service as gitlab, IGitlabMergeRequestDetail } from '../../api/gitlab';
 /* eslint-enable no-unused-vars */
-
-const CLOSED_MR_REACTION = process.env.CLOSED_MR_REACTION || 'heavy_check_mark';
-
-interface IReviewers {
-    reviewers: string[];
-    hasOpenDiscussion: boolean;
-}
 
 const fetchOpenMRs = () => MergeRequest.find({ 'done': false });
 
 const fetchSingleMR = (mr: IMergeRequestModel) => gitlab.getMergeRequestDetail(mr.url);
 
-const fetchUpvoters = async (mr: IMergeRequestModel): Promise<string[]> => {
-    const reactions: IGitlabMergeRequestReaction[] = await gitlab.getMergeRequestReactions(mr.url);
-
-    const upvoters = reactions
-        .reduce((names: string[], reaction: IGitlabMergeRequestReaction) => {
-            if (reaction.name === 'thumbsup') names.push(reaction.user.username);
-
-            return names;
-        }, []);
-
-    return upvoters;
-};
-
-const updateUpvoters = async (
-    mr: IMergeRequestModel,
-    current: IGitlabMergeRequestDetail,
-): Promise<string[]> => {
-    const slackReactions: string[] = [];
-
-    // get mr upvoters
-    const upvoters = await fetchUpvoters(mr);
-
-    // if someone added a new upvote, save it
-    if (_.difference(upvoters, mr.analytics.upvoters).length > 0) {
-        const upvotersChanges = current.upvotes - mr.analytics.upvoters.length;
-
-        // eslint-disable-next-line no-param-reassign
-        mr.analytics.upvoters = upvoters;
-
-        // if has more upvotes on git, add reactions
-        // otherwise remove it
-        if (upvotersChanges > 0) {
-            return slackHelper.randomizeThumbsup(mr.slack.reactions, upvotersChanges);
-        }
-
-        const remove = mr.slack.reactions.splice(0, upvotersChanges * -1);
-
-        await slack.removeReaction(
-            JSON.parse(mr.rawSlackMessage), mr.slack.messageId, remove,
-        );
-    }
-
-    return slackReactions;
-};
-
-const fetchDiscussions = async (mr: IMergeRequestModel): Promise<IReviewers> => {
-    const discussions = await gitlab.getMergeRequestDiscussions(mr.url);
-
-    const userInteractions = discussions.filter((discussion) => !discussion.individual_note);
-
-    // get username of first discussion on each thread
-    const reviewers = new Set(
-        userInteractions.map((discussion) => discussion.notes[0].author.username),
-    );
-
-    const hasOpenDiscussion = userInteractions
-        .some((discussion) => discussion.notes.some((note) => note.resolvable && !note.resolved));
-
-    return {
-        'reviewers': [...reviewers],
-        'hasOpenDiscussion': hasOpenDiscussion,
+const getSlackReactions = async (
+    currentMR: IMergeRequestModel,
+    remoteMR: IGitlabMergeRequestDetail,
+): Promise<IReactions> => {
+    const reactions: IReactions = {
+        'add': [],
+        'remove': [],
     };
+
+    const [remoteReactions, remoteDiscussions] = await Promise.all([
+        gitlab.getMergeRequestReactions(currentMR.url),
+        gitlab.getMergeRequestDiscussions(currentMR.url),
+    ]);
+
+    const upvoteReactions = helper.getUpvoteReactions(currentMR, remoteReactions);
+    const discussionReaction = helper.getDiscussionReaction(currentMR, remoteDiscussions);
+    const finishedReaction = helper.getFinishedReaction(currentMR, remoteMR);
+
+    reactions.add = upvoteReactions.add.concat(discussionReaction.add);
+    reactions.remove = upvoteReactions.remove.concat(discussionReaction.remove);
+
+    if (finishedReaction) reactions.add.push(finishedReaction);
+
+    return reactions;
 };
 
-const updateReviewers = async (mr: IMergeRequestModel): Promise<string[]> => {
-    const slackReactions: string[] = [];
-
-    // get mr reviewers
-    const discussions = await fetchDiscussions(mr);
-
-    // if someone added a new discussion, save it
-    if (_.difference(discussions.reviewers, mr.analytics.reviewers).length > 0) {
-        // eslint-disable-next-line no-param-reassign
-        mr.analytics.reviewers = discussions.reviewers;
-    }
-
-    // if has an open discussion, add reaction
-    if (discussions.hasOpenDiscussion && !mr.slack.reactions.includes('speech_balloon')) {
-        slackReactions.push('speech_balloon');
-
-        return slackReactions;
-    }
-
-    // otherwise remove it
-    if (!discussions.hasOpenDiscussion && mr.slack.reactions.includes('speech_balloon')) {
-        // eslint-disable-next-line no-param-reassign
-        mr.slack.reactions = mr.slack.reactions.filter((reaction) => reaction !== 'speech_balloon');
-
-        await slack.removeReaction(
-            JSON.parse(mr.rawSlackMessage), mr.slack.messageId, 'speech_balloon',
-        );
-    }
-
-    return slackReactions;
-};
-
-const updateMR = async (mr: IMergeRequestModel, current: IGitlabMergeRequestDetail) => {
+const updateMR = async (
+    currentMR: IMergeRequestModel,
+    remoteMR: IGitlabMergeRequestDetail,
+) => {
     try {
-        /* eslint-disable no-param-reassign */
-        // valida se mr pode ser fechado
-        switch (current.state) {
-            case 'merged':
-                mr.done = true;
-                mr.merged = {
-                    'at': new Date(current.merged_at),
-                    'by': current.merged_by.username,
-                };
-                break;
-            case 'closed':
-                mr.done = true;
-                mr.closed = {
-                    'at': new Date(current.closed_at),
-                    'by': current.closed_by.username,
-                };
-                break;
-            default:
-                break;
-        }
+        const reactions = await getSlackReactions(currentMR, remoteMR);
 
-        const [upvoteReactions, discussionReaction] = await Promise.all([
-            updateUpvoters(mr, current),
-            updateReviewers(mr),
+        await Promise.all([
+            slack.addReaction(
+                JSON.parse(currentMR.rawSlackMessage), currentMR.slack.messageId, reactions.add,
+            ),
+            slack.removeReaction(
+                JSON.parse(currentMR.rawSlackMessage), currentMR.slack.messageId, reactions.remove,
+            ),
         ]);
 
-        const newGitReactions = discussionReaction.concat(upvoteReactions);
-
-        // always like before close
-        if (newGitReactions.length > 0) {
-            await slack.addReaction(
-                JSON.parse(mr.rawSlackMessage),
-                mr.slack.messageId,
-                newGitReactions,
-            );
-        }
-
-        // add to document after react on slack
-        mr.slack.reactions = mr.slack.reactions.concat(newGitReactions);
-
-        if (mr.done && !mr.slack.reactions.includes(CLOSED_MR_REACTION)) {
-            await slack.addReaction(
-                JSON.parse(mr.rawSlackMessage),
-                mr.slack.messageId,
-                CLOSED_MR_REACTION,
-            );
-
-            mr.slack.reactions.push(CLOSED_MR_REACTION);
-        }
-        /* eslint-enable no-param-reassign */
-
-        return mr.save();
+        return currentMR.save();
     } catch (err) {
-        logger.info(mr);
+        logger.info(currentMR);
 
         return logger.error(err);
     }
