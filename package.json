@@ -5,7 +5,7 @@
   "main": "dist/app.js",
   "scripts": {
     "start": "node dist/app.js",
-    "test": "jest",
+    "test": "jest test/",
     "lint": "eslint src/** --ext .ts",
     "build": "tsc",
     "dev": "ts-node src/app.ts",
