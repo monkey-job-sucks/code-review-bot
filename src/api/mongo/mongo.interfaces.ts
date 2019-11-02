@@ -22,7 +22,7 @@ export interface IChannelMergeRequests {
     mrs?: IMergeRequestModel[];
 }
 
-interface IMergeRequestModelActionLog {
+export interface IMergeRequestModelActionLog {
     at: Date;
     by: string;
 }

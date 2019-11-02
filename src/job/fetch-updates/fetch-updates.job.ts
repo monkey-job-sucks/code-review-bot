@@ -5,7 +5,7 @@ import { service as slack } from '../../api/slack';
 
 /* eslint-disable no-unused-vars */
 import { IJobConfig } from '../job.interface';
-import { IReactions } from './fetch-updates.interface';
+import { IReactions, IRemoteInfo } from './fetch-updates.interface';
 import { MergeRequest, IMergeRequestModel } from '../../api/mongo';
 import { service as gitlab, IGitlabMergeRequestDetail } from '../../api/gitlab';
 /* eslint-enable no-unused-vars */
@@ -14,13 +14,15 @@ const fetchOpenMRs = () => MergeRequest.find({ 'done': false });
 
 const fetchSingleMR = (mr: IMergeRequestModel) => gitlab.getMergeRequestDetail(mr.url);
 
-const getSlackReactions = async (
+const getRemoteInfo = async (
     currentMR: IMergeRequestModel,
     remoteMR: IGitlabMergeRequestDetail,
-): Promise<IReactions> => {
-    const reactions: IReactions = {
-        'add': [],
-        'remove': [],
+): Promise<IRemoteInfo> => {
+    const remoteInfo: IRemoteInfo = {
+        'reactions': {
+            'add': [],
+            'remove': [],
+        },
     };
 
     const [remoteReactions, remoteDiscussions] = await Promise.all([
@@ -28,16 +30,29 @@ const getSlackReactions = async (
         gitlab.getMergeRequestDiscussions(currentMR.url),
     ]);
 
-    const upvoteReactions = helper.getUpvoteReactions(currentMR, remoteReactions);
-    const discussionReaction = helper.getDiscussionReaction(currentMR, remoteDiscussions);
-    const finishedReaction = helper.getFinishedReaction(currentMR, remoteMR);
+    const upvoted = helper.getUpvoteReactions(currentMR, remoteReactions);
+    const finished = helper.getFinishedReaction(remoteMR);
+    const reviewed = helper.getDiscussionReaction(currentMR, remoteDiscussions);
 
-    reactions.add = upvoteReactions.add.concat(discussionReaction.add);
-    reactions.remove = upvoteReactions.remove.concat(discussionReaction.remove);
+    remoteInfo.reactions.add = upvoted.reactions.add.concat(reviewed.reactions.add);
+    remoteInfo.reactions.remove = upvoted.reactions.remove.concat(reviewed.reactions.remove);
 
-    if (finishedReaction) reactions.add.push(finishedReaction);
+    if (upvoted.upvoters) {
+        remoteInfo.upvoters = upvoted.upvoters;
+    }
 
-    return reactions;
+    if (reviewed.reviewers) {
+        remoteInfo.reviewers = reviewed.reviewers;
+    }
+
+    if (finished.reaction) {
+        remoteInfo.reactions.add.push(finished.reaction);
+
+        if (finished.merged) remoteInfo.merged = finished.merged;
+        if (finished.closed) remoteInfo.closed = finished.closed;
+    }
+
+    return remoteInfo;
 };
 
 const updateMR = async (
@@ -45,7 +60,13 @@ const updateMR = async (
     remoteMR: IGitlabMergeRequestDetail,
 ) => {
     try {
-        const reactions = await getSlackReactions(currentMR, remoteMR);
+        const {
+            merged,
+            closed,
+            upvoters,
+            reviewers,
+            reactions,
+        } = await getRemoteInfo(currentMR, remoteMR);
 
         await Promise.all([
             slack.addReaction(
@@ -55,6 +76,22 @@ const updateMR = async (
                 JSON.parse(currentMR.rawSlackMessage), currentMR.slack.messageId, reactions.remove,
             ),
         ]);
+
+        // update mongo document with new info
+        /* eslint-disable no-param-reassign */
+        if (upvoters) currentMR.analytics.upvoters = upvoters;
+        if (reviewers) currentMR.analytics.reviewers = reviewers;
+
+        if (merged || closed) {
+            currentMR.done = true;
+
+            if (merged) {
+                currentMR.merged = merged;
+            } else {
+                currentMR.closed = closed;
+            }
+        }
+        /* eslint-enable no-param-reassign */
 
         return currentMR.save();
     } catch (err) {
