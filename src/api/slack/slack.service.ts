@@ -74,23 +74,14 @@ class Slack {
     ): Promise<void> {
         const api = await this.adapter.getAPI(message);
 
-        if (typeof emoji === 'string') {
-            await api.reactions.add({
-                'name': emoji,
-                'timestamp': timestamp,
-                'channel': message.channel,
-            });
-        } else {
-            /* eslint-disable no-restricted-syntax, no-await-in-loop */
-            for (const e of emoji) {
-                await api.reactions.add({
-                    'name': e,
-                    'timestamp': timestamp,
-                    'channel': message.channel,
-                });
-            }
-            /* eslint-enable no-restricted-syntax, no-await-in-loop */
+        const { channel } = message;
+        const reactions = typeof emoji === 'string' ? [emoji] : emoji;
+
+        /* eslint-disable no-restricted-syntax, no-await-in-loop */
+        for (const name of reactions) {
+            await api.reactions.add({ name, timestamp, channel });
         }
+        /* eslint-enable no-restricted-syntax, no-await-in-loop */
     }
 
     public async removeReaction(
@@ -98,23 +89,14 @@ class Slack {
     ): Promise<void> {
         const api = await this.adapter.getAPI(message);
 
-        if (typeof emoji === 'string') {
-            await api.reactions.remove({
-                'name': emoji,
-                'timestamp': timestamp,
-                'channel': message.channel,
-            });
-        } else {
-            /* eslint-disable no-restricted-syntax, no-await-in-loop */
-            for (const e of emoji) {
-                await api.reactions.remove({
-                    'name': e,
-                    'timestamp': timestamp,
-                    'channel': message.channel,
-                });
-            }
-            /* eslint-enable no-restricted-syntax, no-await-in-loop */
+        const { channel } = message;
+        const reactions = typeof emoji === 'string' ? [emoji] : emoji;
+
+        /* eslint-disable no-restricted-syntax, no-await-in-loop */
+        for (const name of reactions) {
+            await api.reactions.remove({ name, timestamp, channel });
         }
+        /* eslint-enable no-restricted-syntax, no-await-in-loop */
     }
 
     public async updateMessage(message: BotkitMessage, timestamp: string, newText: string) {
