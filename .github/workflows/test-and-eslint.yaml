@@ -1,12 +1,12 @@
-name: ESLint
+name: Lint and Test
 
 on:
   pull_request:
     types: [opened, synchronize]
 
 jobs:
-  eslint:
-    name: ESLint
+  lint-and-test:
+    name: Lint and Test
     runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
@@ -22,3 +22,5 @@ jobs:
         run: npm ci
       - name: npm run lint
         run: npm run lint
+      - name: npm run test
+        run: npm run test
