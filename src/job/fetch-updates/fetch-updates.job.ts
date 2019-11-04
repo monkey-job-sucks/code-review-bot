@@ -37,20 +37,12 @@ const getRemoteInfo = async (
     remoteInfo.reactions.add = upvoted.reactions.add.concat(reviewed.reactions.add);
     remoteInfo.reactions.remove = upvoted.reactions.remove.concat(reviewed.reactions.remove);
 
-    if (upvoted.upvoters) {
-        remoteInfo.upvoters = upvoted.upvoters;
-    }
+    if (upvoted.upvoters) remoteInfo.upvoters = upvoted.upvoters;
+    if (reviewed.reviewers) remoteInfo.reviewers = reviewed.reviewers;
 
-    if (reviewed.reviewers) {
-        remoteInfo.reviewers = reviewed.reviewers;
-    }
-
-    if (finished.reaction) {
-        remoteInfo.reactions.add.push(finished.reaction);
-
-        if (finished.merged) remoteInfo.merged = finished.merged;
-        if (finished.closed) remoteInfo.closed = finished.closed;
-    }
+    if (finished.merged) remoteInfo.merged = finished.merged;
+    if (finished.closed) remoteInfo.closed = finished.closed;
+    if (finished.reaction) remoteInfo.reactions.add.push(finished.reaction);
 
     return remoteInfo;
 };
@@ -79,18 +71,12 @@ const updateMR = async (
 
         // update mongo document with new info
         /* eslint-disable no-param-reassign */
+        currentMR.done = !!merged || !!closed;
+
+        if (merged) currentMR.merged = merged;
+        if (closed) currentMR.closed = closed;
         if (upvoters) currentMR.analytics.upvoters = upvoters;
         if (reviewers) currentMR.analytics.reviewers = reviewers;
-
-        if (merged || closed) {
-            currentMR.done = true;
-
-            if (merged) {
-                currentMR.merged = merged;
-            } else {
-                currentMR.closed = closed;
-            }
-        }
         /* eslint-enable no-param-reassign */
 
         return currentMR.save();
