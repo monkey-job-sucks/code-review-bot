@@ -1,0 +1,33 @@
+# https://github.com/marketplace/actions/release-drafter
+
+# template name
+name-template: 'v$NEXT_PATCH_VERSION 🌈'
+
+# git tag
+tag-template: '$NEXT_PATCH_VERSION'
+
+# PR label filters to build release notes
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'feature'
+      - 'improvement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'bug'
+      - 'bugfix'
+  - title: '🧰 Maintenance'
+    label: 'chore'
+
+# PR template (if PR events trigger this action)
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+
+# Release template (if release events trigger this action)
+template: |
+  ## Changes
+
+  $CHANGES
+
+  ## Contributors
+
+  $CONTRIBUTORS
