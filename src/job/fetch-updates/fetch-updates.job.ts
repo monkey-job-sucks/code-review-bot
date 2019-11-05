@@ -5,7 +5,7 @@ import { service as slack } from '../../api/slack';
 
 /* eslint-disable no-unused-vars */
 import { IJobConfig } from '../job.interface';
-import { IReactions, IRemoteInfo } from './fetch-updates.interface';
+import { IRemoteInfo } from './fetch-updates.interface';
 import { MergeRequest, IMergeRequestModel } from '../../api/mongo';
 import { service as gitlab, IGitlabMergeRequestDetail } from '../../api/gitlab';
 /* eslint-enable no-unused-vars */
@@ -83,7 +83,7 @@ const updateMR = async (
     } catch (err) {
         logger.info(currentMR);
 
-        return logger.error(err);
+        return logger.error(err.stack || err);
     }
 };
 

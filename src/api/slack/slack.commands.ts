@@ -74,7 +74,7 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
             return slack.sendEphemeral(message, err.message);
         }
 
-        logger.error(err);
+        logger.error(err.stack || err);
 
         throw err;
     }
