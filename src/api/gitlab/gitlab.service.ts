@@ -42,6 +42,10 @@ class Gitlab {
         let info: IGitlabMergeRequestUrlInfo;
 
         try {
+            if (!url.startsWith(this.host)) {
+                throw new Message('Não posso aceitar mrs desse git :disappointed:');
+            }
+
             info = helper.getUrlInfo(url);
 
             if (!info.id || !info.repository) {
