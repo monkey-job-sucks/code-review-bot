@@ -3,14 +3,18 @@ import { IRanking, IRankingAnalyticsSum } from './rankings.interface';
 import { IMergeRequestModel } from '../../api/mongo';
 /* eslint-enable no-unused-vars */
 
-const getTotalByKey = (currentMR: IMergeRequestModel, currentAnalyticsSum: IRankingAnalyticsSum[], key: 'upvoters' | 'reviewers') => currentMR.analytics[key].reduce((analyticsSum: IRankingAnalyticsSum[], remoteUsername: string) => {
-    const user = analyticsSum.find((g) => g.username === remoteUsername);
+const getTotalByKey = (
+    currentMR: IMergeRequestModel,
+    currentAnalyticsSum: IRankingAnalyticsSum[],
+    key: 'upvoters' | 'reviewers',
+) => currentMR.analytics[key].reduce((analyticsSum: IRankingAnalyticsSum[], username: string) => {
+    const user = analyticsSum.find((g) => g.username === username);
 
     if (user) {
         user.total += 1;
     } else {
         analyticsSum.push({
-            'username': remoteUsername,
+            'username': username,
             'total': 1,
         });
     }
