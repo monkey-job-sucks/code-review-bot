@@ -9,14 +9,22 @@ import { service as slack, factory as slackFactory } from '../../api/slack';
 import { IJobConfig } from '../job.interface';
 /* eslint-enable no-unused-vars */
 
-const { NOTIFY_OPEN_MRS_CRON, NOTIFY_OPEN_MRS_DELAYED_IN_HOURS } = process.env;
+const {
+    NOTIFY_OPEN_MRS_CRON,
+    NOTIFY_OPEN_MRS_DELAYED_IN_HOURS,
+    DISCUSSION_MR_REACTION,
+} = process.env;
 
 const fetchDelayedMRs = (): Promise<IChannelMergeRequests[]> => {
     const hours = Number(NOTIFY_OPEN_MRS_DELAYED_IN_HOURS);
     const cutDate = moment().subtract(hours, 'hours').toDate();
 
     return MergeRequest.aggregate()
-        .match({ 'done': false, 'added.at': { '$lte': cutDate } })
+        .match({
+            'done': false,
+            'added.at': { '$lte': cutDate },
+            'slack.reactions': { '$nin': [DISCUSSION_MR_REACTION] },
+        })
         .sort({ 'added.at': 1 })
         .group({ '_id': '$slack.channel.id', 'mrs': { '$push': '$$ROOT' } })
         .exec();
