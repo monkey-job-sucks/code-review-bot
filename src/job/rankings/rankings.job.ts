@@ -13,21 +13,25 @@ import slackFactory from '../../api/slack/slack.factory';
 
 const { NOTIFY_RANKING_CRON } = process.env;
 
-const fetchElegibleMRs = async (amount: number, unit: string): Promise<IRanking[]> => {
+const fetchElegibleMRs = async (
+    amount: number,
+    unit: string,
+    period: string,
+): Promise<IRanking[]> => {
     const cutDate = moment().subtract(amount as any, unit as any).toDate();
 
     const elegibles: IMergeRequestModel[] = await MergeRequest.aggregate()
         .match({ 'done': true, 'added.at': { '$gte': cutDate } })
         .exec();
 
-    return helper.groupByAnalytics(elegibles);
+    return helper.groupByAnalytics(elegibles, period);
 };
 
 const notifyRanking = async () => {
-    const elegibleMRsGroupedByAnalytics = await fetchElegibleMRs(1, 'week');
+    const elegibleMRsGroupedByAnalytics = await fetchElegibleMRs(1, 'week', 'da última semana');
 
     return Promise.all(elegibleMRsGroupedByAnalytics.map((mr) => {
-        const message = slackFactory.generateRankingMessage(mr, 'da última semana');
+        const message = slackFactory.generateRankingMessage(mr);
 
         return slack.sendMessage({ 'channel': mr.channel } as BotkitMessage, message);
     }));

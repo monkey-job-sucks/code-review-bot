@@ -5,6 +5,7 @@ export interface IRankingAnalyticsSum {
 
 export interface IRanking {
     channel: string;
+    period: string;
     upvoters?: IRankingAnalyticsSum[];
     reviewers?: IRankingAnalyticsSum[];
 }

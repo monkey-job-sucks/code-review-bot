@@ -24,12 +24,14 @@ const getTotalByKey = (
 
 const groupByAnalytics = (
     mrs: IMergeRequestModel[],
+    period: string,
 ): IRanking[] => mrs.reduce((grouped: IRanking[], current: IMergeRequestModel) => {
     let channel = grouped.find((g) => g.channel === current.slack.channel.id);
 
     if (!channel) {
         channel = {
             'channel': current.slack.channel.id,
+            'period': period,
             'upvoters': [],
             'reviewers': [],
         };

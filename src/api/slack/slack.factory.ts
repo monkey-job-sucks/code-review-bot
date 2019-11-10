@@ -39,11 +39,11 @@ const generateDelayedMergeRequestsMessage = (delayedMrs: IChannelMergeRequests):
     return messages.join('\r');
 };
 
-const generateRankingMessage = (ranking: IRanking, period: string): string => {
+const generateRankingMessage = (ranking: IRanking): string => {
     const messages: string[] = [];
 
     if (ranking.upvoters.length > 0 || ranking.reviewers.length > 0) {
-        messages.push(`<!here>, esse é o ranking ${period}:`);
+        messages.push(`<!here>, esse é o ranking ${ranking.period}:`);
 
         if (ranking.upvoters.length > 0) {
             messages.push('Quem mais deu likes');
