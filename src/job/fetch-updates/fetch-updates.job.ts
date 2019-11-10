@@ -5,7 +5,7 @@ import { service as slack } from '../../api/slack';
 
 /* eslint-disable no-unused-vars */
 import { IJobConfig } from '../job.interface';
-import { IRemoteInfo } from './fetch-updates.interface';
+import { IRemoteInfo, IReactions } from './fetch-updates.interface';
 import { MergeRequest, IMergeRequestModel } from '../../api/mongo';
 import { service as gitlab, IGitlabMergeRequestDetail } from '../../api/gitlab';
 /* eslint-enable no-unused-vars */
@@ -47,6 +47,17 @@ const getRemoteInfo = async (
     return remoteInfo;
 };
 
+const updateReactions = (
+    currentReactions: string[],
+    newReactions: IReactions,
+): string[] => currentReactions.reduce((nextReactions: string[], reaction: string) => {
+    if (newReactions.remove.includes(reaction)) return nextReactions;
+
+    nextReactions.push(reaction);
+
+    return nextReactions;
+}, []).concat(newReactions.add);
+
 const updateMR = async (
     currentMR: IMergeRequestModel,
     remoteMR: IGitlabMergeRequestDetail,
@@ -60,17 +71,18 @@ const updateMR = async (
             reactions,
         } = await getRemoteInfo(currentMR, remoteMR);
 
-        await Promise.all([
-            slack.addReaction(
-                JSON.parse(currentMR.rawSlackMessage), currentMR.slack.messageId, reactions.add,
-            ),
-            slack.removeReaction(
-                JSON.parse(currentMR.rawSlackMessage), currentMR.slack.messageId, reactions.remove,
-            ),
-        ]);
+        await slack.removeReaction(
+            JSON.parse(currentMR.rawSlackMessage), currentMR.slack.messageId, reactions.remove,
+        );
+
+        await slack.addReaction(
+            JSON.parse(currentMR.rawSlackMessage), currentMR.slack.messageId, reactions.add,
+        );
 
         // update mongo document with new info
         /* eslint-disable no-param-reassign */
+        currentMR.slack.reactions = updateReactions(currentMR.slack.reactions, reactions);
+
         currentMR.done = !!merged || !!closed;
 
         if (merged) currentMR.merged = merged;
