@@ -60,11 +60,11 @@ class Logger {
     private sendToSlack(level: ELevel, message: string) {
         const to = { 'channel': this.SLACK_LOG_CHANNEL_ID } as BotkitMessage;
 
-        if (message.length < this.SLACK_LOG_MAX_TEXT_MESSAGE_SIZE) {
-            return slack.sendMessage(to, `[${level}] message`);
+        if (message.length >= this.SLACK_LOG_MAX_TEXT_MESSAGE_SIZE) {
+            return slack.sendSnippet(to, message, { 'filename': level });
         }
 
-        return slack.sendSnippet(to, message, { 'filename': level });
+        return slack.sendMessage(to, `[${level}] ${message}`);
     }
 
     debug(message: string | any) {

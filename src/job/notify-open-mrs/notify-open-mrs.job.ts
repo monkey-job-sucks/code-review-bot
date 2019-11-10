@@ -43,7 +43,7 @@ const notifyOpenMRsjob: IJobConfig = {
     'isEnabled': () => !!NOTIFY_OPEN_MRS_CRON,
     'when': NOTIFY_OPEN_MRS_CRON,
     'function': async function notifyOpenMRs() {
-        logger.debug('[notifyOpenMRs] Starting job');
+        logger.debug('[notifyOpenMRs] Job started');
 
         const delayedMRsAmount = await notifyDelayedMRs();
 

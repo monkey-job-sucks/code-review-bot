@@ -103,7 +103,7 @@ const fetchMRUpdatesJob: IJobConfig = {
     'isEnabled': () => !!process.env.FETCH_MR_UPDATES_CRON,
     'when': process.env.FETCH_MR_UPDATES_CRON,
     'function': async function fetchMRUpdates() {
-        logger.debug('[fetchMRUpdates] Starting job');
+        logger.debug('[fetchMRUpdates] Job started');
 
         const openMRsAmount = await updateOpenMRs();
 
