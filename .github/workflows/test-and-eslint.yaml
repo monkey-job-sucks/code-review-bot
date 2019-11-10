@@ -1,18 +1,19 @@
-name: ESLint
+name: Lint and Test
 
 on:
   pull_request:
-    types: [opened, synchronize, review_requested]
+    types: [opened, synchronize]
 
 jobs:
-  build:
-    name: ESLint
+  lint-and-test:
+    name: Lint and Test
     runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
         operating-system: [ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v1
+      - name: Checkout
+        uses: actions/checkout@v1
       - name: Set Node.js 10.x
         uses: actions/setup-node@master
         with:
@@ -21,3 +22,5 @@ jobs:
         run: npm ci
       - name: npm run lint
         run: npm run lint
+      - name: npm run test
+        run: npm run test

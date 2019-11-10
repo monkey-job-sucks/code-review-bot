@@ -1,0 +1,59 @@
+{
+  "name": "code-review-bot",
+  "version": "0.0.1",
+  "description": "Bot para controle de fila de code review",
+  "main": "dist/app.js",
+  "scripts": {
+    "start": "node dist/app.js",
+    "test": "jest test/",
+    "lint": "eslint src/** --ext .ts",
+    "build": "tsc",
+    "dev": "ts-node src/app.ts",
+    "local": "docker-compose -f docker-compose-local.yml up"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/monkey-job-sucks/code-review-bot"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/monkey-job-sucks/code-review-bot/issues"
+  },
+  "homepage": "https://github.com/monkey-job-sucks/code-review-bot#readme",
+  "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
+    "@babel/preset-typescript": "^7.6.0",
+    "@types/cron": "^1.7.1",
+    "@types/jest": "^24.0.21",
+    "@types/lodash": "^4.14.144",
+    "@types/mongoose": "^5.5.18",
+    "@typescript-eslint/eslint-plugin": "^2.3.1",
+    "@typescript-eslint/parser": "^2.3.1",
+    "babel-jest": "^24.9.0",
+    "dotenv": "^8.2.0",
+    "eslint": "^6.4.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-react": "^7.15.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "jest": "^24.9.0",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.3"
+  },
+  "dependencies": {
+    "@slack/web-api": "^5.2.1",
+    "axios": "^0.19.0",
+    "botbuilder-adapter-slack": "^1.0.4",
+    "botkit": "^4.5.0",
+    "cron": "^1.7.2",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
+    "mongoose": "^5.7.1"
+  }
+}

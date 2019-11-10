@@ -1,0 +1,20 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
+    "extends": "airbnb",
+    "rules": {
+      "indent": ["error", 4, { "SwitchCase": 1 }],      
+      "quote-props": ["error", "always"]
+    },
+    "settings": {
+      "import/extensions": [".js",".jsx",".ts",".tsx"],
+      "import/parsers": {
+        "@typescript-eslint/parser": [".ts",".tsx"]
+      },
+      "import/resolver": {
+        "node": {
+          "extensions": [".js",".jsx",".ts",".tsx"]
+        }
+      }
+    }
+  }
