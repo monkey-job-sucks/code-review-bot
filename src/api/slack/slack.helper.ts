@@ -33,8 +33,9 @@ const shuffle = <T>(array: T[]): T[] => {
 
 const randomizeThumbsup = (current: string[], amount: number): string[] => {
     const currentValidReactions = current.filter((reaction) => upvoteReactions.includes(reaction));
+    const neededReactions = amount + currentValidReactions.length;
 
-    if (amount + currentValidReactions.length > upvoteReactions.length) {
+    if (neededReactions > upvoteReactions.length) {
         throw new Error('Not enough reactions');
     }
 
