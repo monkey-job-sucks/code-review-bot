@@ -140,6 +140,25 @@ describe('fetch-updates.job', () => {
             expect(upvoted.reactions.remove.length).toBe(2);
             expect(upvoted.upvoters).not.toBeTruthy();
         });
+
+        test('should add one reaction when remote has two upvoters and mongo have one', () => {
+            currentMR.analytics.upvoters.push('user.one');
+            currentMR.slack.reactions.push(UPVOTE_MR_REACTION);
+
+            const remoteUserTwo = getUser('user.two');
+            const remoteUserThree = getUser('user.three');
+            remoteReactions.push(getUserUpvote(remoteUserTwo));
+            remoteReactions.push(getUserUpvote(remoteUserThree));
+
+            const upvoted = helper.getUpvoteReactions(currentMR, remoteReactions);
+
+            expect(upvoted.reactions.add.length).toBe(1);
+            expect(upvoted.reactions.remove.length).toBe(0);
+            expect(upvoted.upvoters).toBeTruthy();
+            expect(upvoted.upvoters.length).toBe(2);
+            expect(upvoted.upvoters).toContain(remoteUserTwo.username);
+            expect(upvoted.upvoters).toContain(remoteUserThree.username);
+        });
     });
 
     describe('getDiscussionReaction', () => {
@@ -158,9 +177,10 @@ describe('fetch-updates.job', () => {
         });
 
         test('should get zero reactions when mongo and remote have open discussions', () => {
+            currentMR.slack.reactions.push(DISCUSSION_MR_REACTION);
+
             const remoteUser = getUser('user.one');
             remoteDiscussions.push(getDiscussion(remoteUser, true));
-            currentMR.slack.reactions.push(DISCUSSION_MR_REACTION);
 
             const reviwed = helper.getDiscussionReaction(currentMR, remoteDiscussions);
 
@@ -185,9 +205,10 @@ describe('fetch-updates.job', () => {
         });
 
         test('should remove one reaction when remote dont have open discussions and mongo have', () => {
+            currentMR.slack.reactions.push(DISCUSSION_MR_REACTION);
+
             const remoteUser = getUser('user.one');
             remoteDiscussions.push(getDiscussion(remoteUser, false));
-            currentMR.slack.reactions.push(DISCUSSION_MR_REACTION);
 
             const reviwed = helper.getDiscussionReaction(currentMR, remoteDiscussions);
 
