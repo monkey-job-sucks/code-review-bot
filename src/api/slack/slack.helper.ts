@@ -32,16 +32,19 @@ const shuffle = <T>(array: T[]): T[] => {
 };
 
 const randomizeThumbsup = (current: string[], amount: number): string[] => {
-    if (amount + current.length > upvoteReactions.length) {
+    const currentValidReactions = current.filter((reaction) => upvoteReactions.includes(reaction));
+    const neededReactions = amount + currentValidReactions.length;
+
+    if (neededReactions > upvoteReactions.length) {
         throw new Error('Not enough reactions');
     }
 
     const reactions = shuffle(upvoteReactions);
 
-    const unusedReactions = reactions.filter((reaction) => !current.includes(reaction));
+    const unusedReactions = reactions
+        .filter((reaction) => !currentValidReactions.includes(reaction));
 
-    const newReactionsToFetch = amount - current.length;
-    const newReactions = unusedReactions.slice(0, newReactionsToFetch);
+    const newReactions = unusedReactions.slice(0, amount);
 
     return newReactions;
 };
