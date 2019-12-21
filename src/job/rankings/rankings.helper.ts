@@ -3,6 +3,10 @@ import { IRanking, IRankingAnalyticsSum } from './rankings.interface';
 import { IMergeRequestModel } from '../../api/mongo';
 /* eslint-enable no-unused-vars */
 
+const sortRanking = (
+    currentRanking: IRankingAnalyticsSum, nextRanking: IRankingAnalyticsSum,
+): number => (currentRanking.total > nextRanking.total ? -1 : 1);
+
 const getTotalByKey = (
     currentMR: IMergeRequestModel,
     currentAnalyticsSum: IRankingAnalyticsSum[],
@@ -39,8 +43,8 @@ const groupByAnalytics = (
         grouped.push(channel);
     }
 
-    channel.upvoters = getTotalByKey(current, channel.upvoters, 'upvoters');
-    channel.reviewers = getTotalByKey(current, channel.reviewers, 'reviewers');
+    channel.upvoters = getTotalByKey(current, channel.upvoters, 'upvoters').sort(sortRanking);
+    channel.reviewers = getTotalByKey(current, channel.reviewers, 'reviewers').sort(sortRanking);
 
     return grouped;
 }, []);
