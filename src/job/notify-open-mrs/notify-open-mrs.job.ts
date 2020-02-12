@@ -4,10 +4,13 @@ import { BotkitMessage } from 'botkit';
 import * as moment from 'moment';
 
 import logger from '../../helpers/Logger';
+import jobManager from '../job-manager';
 import { MergeRequest, IChannelMergeRequests } from '../../api/mongo';
 import { service as slack, factory as slackFactory } from '../../api/slack';
 import { IJobConfig } from '../job.interface';
 /* eslint-enable no-unused-vars */
+
+const JOB_NAME = 'notify-open-mrs';
 
 const {
     NOTIFY_OPEN_MRS_CRON,
@@ -38,26 +41,36 @@ const notifyChannel = (channelMRs: IChannelMergeRequests) => {
 };
 
 const notifyDelayedMRs = async (): Promise<number> => {
-    const openMRs = await fetchDelayedMRs();
+    try {
+        const openMRs = await fetchDelayedMRs();
 
-    if (openMRs.length === 0) return 0;
+        if (openMRs.length === 0) return 0;
 
-    await Promise.all(openMRs.map(notifyChannel));
+        await Promise.all(openMRs.map(notifyChannel));
 
-    return openMRs.length;
+        return openMRs.length;
+    } catch (err) {
+        logger.error(err.stack || err);
+
+        return 0;
+    }
 };
 
 const notifyOpenMRsjob: IJobConfig = {
     'isEnabled': () => !!NOTIFY_OPEN_MRS_CRON,
     'when': NOTIFY_OPEN_MRS_CRON,
     'function': async function notifyOpenMRs() {
-        logger.debug('[notifyOpenMRs] Job started');
+        if (jobManager.isRunning(JOB_NAME)) return false;
+
+        jobManager.start(JOB_NAME);
 
         const delayedMRsAmount = await notifyDelayedMRs();
 
         logger.debug(`[notifyOpenMRs] Got ${delayedMRsAmount} mrs`);
 
-        return logger.debug('[notifyOpenMRs] Job ended');
+        jobManager.stop(JOB_NAME);
+
+        return true;
     },
 };
 

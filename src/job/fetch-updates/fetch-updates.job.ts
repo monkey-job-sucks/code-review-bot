@@ -2,6 +2,7 @@
 import helper from './fetch-updates.helper';
 import logger from '../../helpers/Logger';
 import { service as slack } from '../../api/slack';
+import jobManager from '../job-manager';
 
 /* eslint-disable no-unused-vars */
 import { IJobConfig } from '../job.interface';
@@ -9,6 +10,8 @@ import { IRemoteInfo, IReactions } from './fetch-updates.interface';
 import { MergeRequest, IMergeRequestModel } from '../../api/mongo';
 import { service as gitlab, IGitlabMergeRequestDetail } from '../../api/gitlab';
 /* eslint-enable no-unused-vars */
+
+const JOB_NAME = 'fetch-updates';
 
 const fetchOpenMRs = () => MergeRequest.find({ 'done': false });
 
@@ -100,28 +103,38 @@ const updateMR = async (
 };
 
 const updateOpenMRs = async (): Promise<number> => {
-    const openMRs: IMergeRequestModel[] = await fetchOpenMRs();
+    try {
+        const openMRs: IMergeRequestModel[] = await fetchOpenMRs();
 
-    if (openMRs.length === 0) return 0;
+        if (openMRs.length === 0) return 0;
 
-    const currentMRStatus = await Promise.all(openMRs.map(fetchSingleMR));
+        const currentMRStatus = await Promise.all(openMRs.map(fetchSingleMR));
 
-    await Promise.all(openMRs.map((mr, i) => updateMR(mr, currentMRStatus[i].detail)));
+        await Promise.all(openMRs.map((mr, i) => updateMR(mr, currentMRStatus[i].detail)));
 
-    return openMRs.length;
+        return openMRs.length;
+    } catch (err) {
+        logger.error(err.stack || err);
+
+        return 0;
+    }
 };
 
 const fetchMRUpdatesJob: IJobConfig = {
     'isEnabled': () => !!process.env.FETCH_MR_UPDATES_CRON,
     'when': process.env.FETCH_MR_UPDATES_CRON,
     'function': async function fetchMRUpdates() {
-        logger.debug('[fetchMRUpdates] Job started');
+        if (jobManager.isRunning(JOB_NAME)) return false;
+
+        jobManager.start(JOB_NAME);
 
         const openMRsAmount = await updateOpenMRs();
 
         logger.debug(`[fetchMRUpdates] Got ${openMRsAmount} mrs`);
 
-        return logger.debug('[fetchMRUpdates] Job ended');
+        jobManager.stop(JOB_NAME);
+
+        return true;
     },
 };
 
