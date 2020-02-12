@@ -6,10 +6,12 @@ import { IRanking } from './rankings.interface';
 import { MergeRequest, IMergeRequestModel } from '../../api/mongo';
 import { IJobConfig } from '../job.interface';
 /* eslint-enable no-unused-vars */
+import jobManager from '../job-manager';
 import slack from '../../api/slack/slack.service';
 import helper from './rankings.helper';
-import logger from '../../helpers/Logger';
 import slackFactory from '../../api/slack/slack.factory';
+
+const JOB_NAME = 'rankings';
 
 const { NOTIFY_RANKING_CRON } = process.env;
 
@@ -41,11 +43,15 @@ const rankingjob: IJobConfig = {
     'isEnabled': () => !!NOTIFY_RANKING_CRON,
     'when': NOTIFY_RANKING_CRON,
     'function': async function ranking() {
-        logger.debug('[ranking] Job started');
+        if (jobManager.isRunning(JOB_NAME)) return false;
+
+        jobManager.start(JOB_NAME);
 
         await notifyRanking();
 
-        return logger.debug('[ranking] Job ended');
+        jobManager.stop(JOB_NAME);
+
+        return true;
     },
 };
 
