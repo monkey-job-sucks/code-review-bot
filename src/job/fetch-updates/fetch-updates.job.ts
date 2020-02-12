@@ -103,15 +103,21 @@ const updateMR = async (
 };
 
 const updateOpenMRs = async (): Promise<number> => {
-    const openMRs: IMergeRequestModel[] = await fetchOpenMRs();
+    try {
+        const openMRs: IMergeRequestModel[] = await fetchOpenMRs();
 
-    if (openMRs.length === 0) return 0;
+        if (openMRs.length === 0) return 0;
 
-    const currentMRStatus = await Promise.all(openMRs.map(fetchSingleMR));
+        const currentMRStatus = await Promise.all(openMRs.map(fetchSingleMR));
 
-    await Promise.all(openMRs.map((mr, i) => updateMR(mr, currentMRStatus[i].detail)));
+        await Promise.all(openMRs.map((mr, i) => updateMR(mr, currentMRStatus[i].detail)));
 
-    return openMRs.length;
+        return openMRs.length;
+    } catch (err) {
+        logger.error(err.stack || err);
+
+        return 0;
+    }
 };
 
 const fetchMRUpdatesJob: IJobConfig = {

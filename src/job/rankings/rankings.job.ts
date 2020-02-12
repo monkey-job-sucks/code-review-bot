@@ -9,6 +9,7 @@ import { IJobConfig } from '../job.interface';
 import jobManager from '../job-manager';
 import slack from '../../api/slack/slack.service';
 import helper from './rankings.helper';
+import logger from '../../helpers/Logger';
 import slackFactory from '../../api/slack/slack.factory';
 
 const JOB_NAME = 'rankings';
@@ -30,13 +31,17 @@ const fetchElegibleMRs = async (
 };
 
 const notifyRanking = async () => {
-    const elegibleMRsGroupedByAnalytics = await fetchElegibleMRs(1, 'week', 'da última semana');
+    try {
+        const elegibleMRsGroupedByAnalytics = await fetchElegibleMRs(1, 'week', 'da última semana');
 
-    return Promise.all(elegibleMRsGroupedByAnalytics.map((mr) => {
-        const message = slackFactory.generateRankingMessage(mr);
+        return Promise.all(elegibleMRsGroupedByAnalytics.map((mr) => {
+            const message = slackFactory.generateRankingMessage(mr);
 
-        return slack.sendMessage({ 'channel': mr.channel } as BotkitMessage, message);
-    }));
+            return slack.sendMessage({ 'channel': mr.channel } as BotkitMessage, message);
+        }));
+    } catch (err) {
+        return logger.error(err.stack || err);
+    }
 };
 
 const rankingjob: IJobConfig = {

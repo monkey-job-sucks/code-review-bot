@@ -41,13 +41,19 @@ const notifyChannel = (channelMRs: IChannelMergeRequests) => {
 };
 
 const notifyDelayedMRs = async (): Promise<number> => {
-    const openMRs = await fetchDelayedMRs();
+    try {
+        const openMRs = await fetchDelayedMRs();
 
-    if (openMRs.length === 0) return 0;
+        if (openMRs.length === 0) return 0;
 
-    await Promise.all(openMRs.map(notifyChannel));
+        await Promise.all(openMRs.map(notifyChannel));
 
-    return openMRs.length;
+        return openMRs.length;
+    } catch (err) {
+        logger.error(err.stack || err);
+
+        return 0;
+    }
 };
 
 const notifyOpenMRsjob: IJobConfig = {
