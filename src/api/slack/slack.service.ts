@@ -79,7 +79,11 @@ class Slack {
 
         /* eslint-disable no-restricted-syntax, no-await-in-loop */
         for (const name of reactions) {
-            await api.reactions.add({ name, timestamp, channel });
+            try {
+                await api.reactions.add({ name, timestamp, channel });
+            } catch (err) {
+                if (err.message !== 'An API error occurred: already_reacted') throw err;
+            }
         }
         /* eslint-enable no-restricted-syntax, no-await-in-loop */
     }
