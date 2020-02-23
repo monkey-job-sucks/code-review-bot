@@ -70,7 +70,7 @@ const getDiscussionReaction = (
 
     // get username of first discussion on each thread
     const reviewers = [...new Set(
-        userInteractions.map((interaction) => interaction.notes[0].author.username),
+        userInteractions.map((interaction) => interaction.notes[0]?.author?.username),
     )];
 
     const hasOpenDiscussion = userInteractions
