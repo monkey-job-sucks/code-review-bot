@@ -24,7 +24,7 @@ const fetchElegibleMRs = async (
     const cutDate = moment().subtract(amount as any, unit as any).toDate();
 
     const elegibles: IMergeRequestModel[] = await MergeRequest.aggregate()
-        .match({ 'added.at': { '$gte': cutDate } })
+        .match({ 'merged.at': { '$gte': cutDate } })
         .exec();
 
     return helper.groupByAnalytics(elegibles, period);
