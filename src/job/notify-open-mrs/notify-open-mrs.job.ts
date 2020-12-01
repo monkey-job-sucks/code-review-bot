@@ -4,6 +4,7 @@ import { BotkitMessage } from 'botkit';
 import * as moment from 'moment';
 
 import logger from '../../helpers/Logger';
+import Sentry from '../../helpers/Sentry';
 import jobManager from '../job-manager';
 import { MergeRequest, IChannelMergeRequests } from '../../api/mongo';
 import { service as slack, factory as slackFactory } from '../../api/slack';
@@ -50,6 +51,17 @@ const notifyDelayedMRs = async (): Promise<number> => {
 
         return openMRs.length;
     } catch (err) {
+        Sentry.capture(err, {
+            'level': Sentry.level.Error,
+            'tags': {
+                'fileName': 'notify-open-mrs.job',
+            },
+            'context': {
+                'name': 'notifyDelayedMRs',
+                'data': {},
+            },
+        });
+
         logger.error(err.stack || err);
 
         return 0;

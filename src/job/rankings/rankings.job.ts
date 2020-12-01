@@ -10,6 +10,7 @@ import jobManager from '../job-manager';
 import slack from '../../api/slack/slack.service';
 import helper from './rankings.helper';
 import logger from '../../helpers/Logger';
+import Sentry from '../../helpers/Sentry';
 import slackFactory from '../../api/slack/slack.factory';
 
 const JOB_NAME = 'rankings';
@@ -40,6 +41,17 @@ const notifyRanking = async () => {
             return slack.sendMessage({ 'channel': mr.channel } as BotkitMessage, message);
         }));
     } catch (err) {
+        Sentry.capture(err, {
+            'level': Sentry.level.Error,
+            'tags': {
+                'fileName': 'rankings.job',
+            },
+            'context': {
+                'name': 'notifyRanking',
+                'data': {},
+            },
+        });
+
         return logger.error(err.stack || err);
     }
 };

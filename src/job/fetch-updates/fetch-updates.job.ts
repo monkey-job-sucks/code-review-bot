@@ -1,6 +1,7 @@
 /* eslint-disable import/no-cycle */
 import helper from './fetch-updates.helper';
 import logger from '../../helpers/Logger';
+import Sentry from '../../helpers/Sentry';
 import { service as slack } from '../../api/slack';
 import jobManager from '../job-manager';
 
@@ -96,6 +97,20 @@ const updateMR = async (
 
         return currentMR.save();
     } catch (err) {
+        Sentry.capture(err, {
+            'level': Sentry.level.Error,
+            'tags': {
+                'fileName': 'fetch-updates.job',
+            },
+            'context': {
+                'name': 'updateMR',
+                'data': {
+                    'currentMR': JSON.stringify(currentMR),
+                    'remoteMR': JSON.stringify(remoteMR),
+                },
+            },
+        });
+
         logger.info(currentMR);
 
         return logger.error(err.stack || err);
@@ -114,6 +129,17 @@ const updateOpenMRs = async (): Promise<number> => {
 
         return openMRs.length;
     } catch (err) {
+        Sentry.capture(err, {
+            'level': Sentry.level.Error,
+            'tags': {
+                'fileName': 'fetch-updates.job',
+            },
+            'context': {
+                'name': 'updateOpenMRs',
+                'data': {},
+            },
+        });
+
         logger.error(err.stack || err);
 
         return 0;
