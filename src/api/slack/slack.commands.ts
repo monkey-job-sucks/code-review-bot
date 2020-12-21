@@ -4,6 +4,7 @@ import { BotWorker, BotkitMessage } from 'botkit';
 
 import slack from './slack.service';
 import logger from '../../helpers/Logger';
+import Sentry from '../../helpers/Sentry';
 import factory from './slack.factory';
 import { MergeRequest, IMergeRequestModel } from '../mongo';
 import { service as gitlab, IGitlabMergeRequest } from '../gitlab';
@@ -68,11 +69,33 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
 
         return document;
     } catch (err) {
+        const captureOptions = {
+            'tags': {
+                'command': '/code-review',
+            },
+            'context': {
+                'name': 'handleCodeReview',
+                'data': {
+                    'message': message.text,
+                },
+            },
+        };
+
         if (err instanceof Message) {
             logger.info(err);
 
+            Sentry.capture(err, {
+                'level': Sentry.level.Warning,
+                ...captureOptions,
+            });
+
             return slack.sendEphemeral(message, err.message);
         }
+
+        Sentry.capture(err, {
+            'level': Sentry.level.Error,
+            ...captureOptions,
+        });
 
         logger.error(err.stack || err);
 
