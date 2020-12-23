@@ -1,4 +1,3 @@
-/* eslint-disable import/no-cycle */
 // eslint-disable-next-line no-unused-vars
 import { CronJob, CronCommand } from 'cron';
 

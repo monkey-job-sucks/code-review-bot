@@ -1,4 +1,3 @@
-/* eslint-disable import/no-cycle */
 import * as mongoose from 'mongoose';
 
 import mergeRequestSchema from './schemas/merge-request.schema';

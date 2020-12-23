@@ -1,4 +1,3 @@
-/* eslint-disable import/no-cycle */
 import { EventEmitter } from 'events';
 // eslint-disable-next-line no-unused-vars
 import { BotkitMessage } from 'botkit';

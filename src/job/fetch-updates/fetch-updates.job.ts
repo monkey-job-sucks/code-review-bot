@@ -1,4 +1,3 @@
-/* eslint-disable import/no-cycle */
 import helper from './fetch-updates.helper';
 import logger from '../../helpers/Logger';
 import Sentry from '../../helpers/Sentry';
