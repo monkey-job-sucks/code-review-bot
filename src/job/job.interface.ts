@@ -2,7 +2,5 @@
 import { CronCommand } from 'cron';
 
 export interface IJobConfig {
-    when: string;
-    function: CronCommand;
-    isEnabled: () => boolean;
+    function: (...args: any) => CronCommand;
 }

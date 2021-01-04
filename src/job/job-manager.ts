@@ -22,6 +22,11 @@ class JobManager {
 
         this.running = this.running.filter((running) => running !== name);
     }
+
+    // eslint-disable-next-line class-methods-use-this
+    log(name: string, message: string): void {
+        logger.debug(`[${name}]: ${message}`);
+    }
 }
 
 const jobManager = new JobManager();

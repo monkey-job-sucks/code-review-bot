@@ -4,5 +4,6 @@ services:
     image: monkeyjobsucks/code-review-bot:latest
     env_file:
       - .env
+    restart: always
     ports:
       - 3000:3000

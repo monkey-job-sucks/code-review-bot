@@ -2,6 +2,8 @@
 import { Botkit, BotkitMessage, BotWorker } from 'botkit';
 import { SlackAdapter, SlackEventMiddleware, SlackMessageTypeMiddleware } from 'botbuilder-adapter-slack';
 import { FilesUploadArguments } from '@slack/web-api';
+
+import { ISettingsModel } from '../mongo';
 /* eslint-enabled no-unused-vars */
 
 import Sentry from '../../helpers/Sentry';
@@ -15,7 +17,7 @@ interface ISlackColors {
 // TODO:
 // validar se todos os escopos são necessários
 // colocar storage do mongo se for necessário manter conversas
-class Slack {
+export class Slack {
     private token: string;
 
     private secret: string;
@@ -30,43 +32,42 @@ class Slack {
 
     private colors: ISlackColors;
 
-    constructor() {
-        this.token = process.env.SLACK_TOKEN;
-        this.secret = process.env.SLACK_SECRET;
-        this.webhookPath = process.env.SLACK_WEBHOOK_PATH;
-        this.verificationToken = process.env.SLACK_VERIFICATION_TOKEN;
-        this.colors = {
-            'added': process.env.SLACK_COLOR_MR_ADDED || 'good',
-        };
-
-        this.adapter = new SlackAdapter({
-            'clientSigningSecret': this.secret,
-            'botToken': this.token,
-            'redirectUri': null,
-            'verificationToken': this.verificationToken,
-            'scopes': ['bot', 'commands', 'chat:write:bot', 'emoji:read', 'incoming-webhook', 'reactions:read', 'chat:write:user', 'users:read', 'channels:read', 'groups:read', 'mpim:read', 'im:read'],
-        });
-
-        // Use SlackEventMiddleware to emit events that match their original Slack event types.
-        this.adapter.use(new SlackEventMiddleware());
-
-        // Use SlackMessageType middleware to further classify messages
-        // as direct_message, direct_mention, or mention
-        this.adapter.use(new SlackMessageTypeMiddleware());
-
-        this.controller = new Botkit({
-            'adapter': this.adapter,
-            'webserver_middlewares': null,
-            'webhook_uri': this.webhookPath,
-        });
-
-        this.controller.middleware.receive.use(Context.createContext);
-    }
-
-    public async load(): Promise<void> {
+    public async load(settings: ISettingsModel): Promise<void> {
         return new Promise((resolve) => {
+            this.token = settings.slack.token;
+            this.secret = settings.slack.secret;
+            this.webhookPath = settings.slack.webhookPath;
+            this.verificationToken = settings.slack.verificationToken;
+            this.colors = {
+                'added': settings.slack.requestAddColor,
+            };
+
+            this.adapter = new SlackAdapter({
+                'clientSigningSecret': this.secret,
+                'botToken': this.token,
+                'redirectUri': null,
+                'verificationToken': this.verificationToken,
+                'scopes': ['bot', 'commands', 'chat:write:bot', 'emoji:read', 'incoming-webhook', 'reactions:read', 'chat:write:user', 'users:read', 'channels:read', 'groups:read', 'mpim:read', 'im:read'],
+            });
+
+            // Use SlackEventMiddleware to emit events that match their original Slack event types.
+            this.adapter.use(new SlackEventMiddleware());
+
+            // Use SlackMessageType middleware to further classify messages
+            // as direct_message, direct_mention, or mention
+            this.adapter.use(new SlackMessageTypeMiddleware());
+
+            this.controller = new Botkit({
+                'adapter': this.adapter,
+                'webserver_middlewares': null,
+                'webhook_uri': this.webhookPath,
+            });
+
+            this.controller.middleware.receive.use(Context.createContext);
+
             this.controller.ready(() => {
-                this.controller.on('slash_command', commands.slashHandler);
+                this.controller.on('slash_command', commands.slashHandler(settings.slack.allowedChannels));
+
                 return resolve();
             });
         });

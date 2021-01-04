@@ -1,13 +1,9 @@
+import settings from '../../__mocks__/settings';
+
 import helper from '../../../src/job/fetch-updates/fetch-updates.helper';
 
 import { IMergeRequestModel } from '../../../src/api/mongo';
 import { IGitlabMergeRequestDetail, IGitlabMergeRequestReaction, IGitlabUser, IGitlabMergeRequestDiscussion } from '../../../src/api/gitlab';
-
-const {
-    CLOSED_MR_REACTION,
-    MERGED_MR_REACTION,
-    DISCUSSION_MR_REACTION,
-} = process.env;
 
 const UPVOTE_MR_REACTION = 'thumbsup';
 
@@ -169,7 +165,7 @@ describe('fetch-updates.job', () => {
         });
 
         test('should get zero reactions and zero reviewers when mongo and remote have no open discussions', () => {
-            const reviwed = helper.getDiscussionReaction(currentMR, remoteDiscussions);
+            const reviwed = helper.getDiscussionReaction(settings, currentMR, remoteDiscussions);
 
             expect(reviwed.reactions.add.length).toBe(0);
             expect(reviwed.reactions.remove.length).toBe(0);
@@ -177,12 +173,12 @@ describe('fetch-updates.job', () => {
         });
 
         test('should get zero reactions when mongo and remote have open discussions', () => {
-            currentMR.slack.reactions.push(DISCUSSION_MR_REACTION);
+            currentMR.slack.reactions.push(settings.slack.reactions.discussion);
 
             const remoteUser = getUser('user.one');
             remoteDiscussions.push(getDiscussion(remoteUser, true));
 
-            const reviwed = helper.getDiscussionReaction(currentMR, remoteDiscussions);
+            const reviwed = helper.getDiscussionReaction(settings, currentMR, remoteDiscussions);
 
             expect(reviwed.reactions.add.length).toBe(0);
             expect(reviwed.reactions.remove.length).toBe(0);
@@ -195,7 +191,7 @@ describe('fetch-updates.job', () => {
             const remoteUser = getUser('user.one');
             remoteDiscussions.push(getDiscussion(remoteUser, true));
 
-            const reviwed = helper.getDiscussionReaction(currentMR, remoteDiscussions);
+            const reviwed = helper.getDiscussionReaction(settings, currentMR, remoteDiscussions);
 
             expect(reviwed.reactions.add.length).toBe(1);
             expect(reviwed.reactions.remove.length).toBe(0);
@@ -205,12 +201,12 @@ describe('fetch-updates.job', () => {
         });
 
         test('should remove one reaction when remote dont have open discussions and mongo have', () => {
-            currentMR.slack.reactions.push(DISCUSSION_MR_REACTION);
+            currentMR.slack.reactions.push(settings.slack.reactions.discussion);
 
             const remoteUser = getUser('user.one');
             remoteDiscussions.push(getDiscussion(remoteUser, false));
 
-            const reviwed = helper.getDiscussionReaction(currentMR, remoteDiscussions);
+            const reviwed = helper.getDiscussionReaction(settings, currentMR, remoteDiscussions);
 
             expect(reviwed.reactions.add.length).toBe(0);
             expect(reviwed.reactions.remove.length).toBe(1);
@@ -222,7 +218,7 @@ describe('fetch-updates.job', () => {
 
     describe('getFinishedReaction', () => {
         test('should not get reaction when remote and mongo are open', () => {
-            const finished = helper.getFinishedReaction(remoteMR);
+            const finished = helper.getFinishedReaction(settings, remoteMR);
 
             expect(finished.reaction).toBeUndefined();
             expect(finished.merged).toBeUndefined();
@@ -234,9 +230,9 @@ describe('fetch-updates.job', () => {
             remoteMR.merged_at = new Date().toString();
             remoteMR.merged_by = getUser('user.one');
 
-            const finished = helper.getFinishedReaction(remoteMR);
+            const finished = helper.getFinishedReaction(settings, remoteMR);
 
-            expect(finished.reaction).toBe(MERGED_MR_REACTION);
+            expect(finished.reaction).toBe(settings.slack.reactions.merged);
             expect(finished.closed).toBeUndefined();
             expect(finished.merged).toBeTruthy();
             expect(finished.merged.at.toString()).toBe(remoteMR.merged_at);
@@ -248,9 +244,9 @@ describe('fetch-updates.job', () => {
             remoteMR.closed_at = new Date().toString();
             remoteMR.closed_by = getUser('user.one');
 
-            const finished = helper.getFinishedReaction(remoteMR);
+            const finished = helper.getFinishedReaction(settings, remoteMR);
 
-            expect(finished.reaction).toBe(CLOSED_MR_REACTION);
+            expect(finished.reaction).toBe(settings.slack.reactions.closed);
             expect(finished.merged).toBeUndefined();
             expect(finished.closed).toBeTruthy();
             expect(finished.closed.at.toString()).toBe(remoteMR.closed_at);
