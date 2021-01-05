@@ -1,33 +1,28 @@
-/* eslint-disable import/no-cycle */
 /* eslint-disable no-unused-vars */
 import { BotkitMessage } from 'botkit';
 import * as moment from 'moment';
 
-import logger from '../../helpers/Logger';
-import Sentry from '../../helpers/Sentry';
-import jobManager from '../job-manager';
-import { MergeRequest, IChannelMergeRequests } from '../../api/mongo';
+import { MergeRequest, IChannelMergeRequests, ISettingsModel } from '../../api/mongo';
 import { service as slack, factory as slackFactory } from '../../api/slack';
 import { IJobConfig } from '../job.interface';
 /* eslint-enable no-unused-vars */
+import logger from '../../helpers/Logger';
+import Sentry from '../../helpers/Sentry';
+import jobManager from '../job-manager';
 
 const JOB_NAME = 'notify-open-mrs';
 
-const {
-    NOTIFY_OPEN_MRS_CRON,
-    NOTIFY_OPEN_MRS_DELAYED_IN_HOURS,
-    DISCUSSION_MR_REACTION,
-} = process.env;
-
-const fetchDelayedMRs = (): Promise<IChannelMergeRequests[]> => {
-    const hours = Number(NOTIFY_OPEN_MRS_DELAYED_IN_HOURS);
+const fetchDelayedMRs = (
+    hours: number,
+    discussionReaction: string,
+): Promise<IChannelMergeRequests[]> => {
     const cutDate = moment().subtract(hours, 'hours').toDate();
 
     return MergeRequest.aggregate()
         .match({
             'done': false,
             'added.at': { '$lte': cutDate },
-            'slack.reactions': { '$nin': [DISCUSSION_MR_REACTION] },
+            'slack.reactions': { '$nin': [discussionReaction] },
         })
         .sort({ 'added.at': 1 })
         .group({ '_id': '$slack.channel.id', 'mrs': { '$push': '$$ROOT' } })
@@ -41,9 +36,12 @@ const notifyChannel = (channelMRs: IChannelMergeRequests) => {
     return slack.sendMessage({ 'channel': channelMRs._id } as BotkitMessage, message);
 };
 
-const notifyDelayedMRs = async (): Promise<number> => {
+const notifyDelayedMRs = async (settings: ISettingsModel): Promise<number> => {
     try {
-        const openMRs = await fetchDelayedMRs();
+        const openMRs = await fetchDelayedMRs(
+            settings.cron.openRequests.hours,
+            settings.slack.reactions.discussion,
+        );
 
         if (openMRs.length === 0) return 0;
 
@@ -69,16 +67,14 @@ const notifyDelayedMRs = async (): Promise<number> => {
 };
 
 const notifyOpenMRsjob: IJobConfig = {
-    'isEnabled': () => !!NOTIFY_OPEN_MRS_CRON,
-    'when': NOTIFY_OPEN_MRS_CRON,
-    'function': async function notifyOpenMRs() {
+    'function': (settings: ISettingsModel) => async function notifyOpenMRs() {
         if (jobManager.isRunning(JOB_NAME)) return false;
 
         jobManager.start(JOB_NAME);
 
-        const delayedMRsAmount = await notifyDelayedMRs();
+        const delayedMRsAmount = await notifyDelayedMRs(settings);
 
-        logger.debug(`[notifyOpenMRs] Got ${delayedMRsAmount} mrs`);
+        jobManager.log(JOB_NAME, `Got ${delayedMRsAmount} mrs`);
 
         jobManager.stop(JOB_NAME);
 

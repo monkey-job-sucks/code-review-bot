@@ -4,7 +4,8 @@
     "extends": "airbnb",
     "rules": {
       "indent": ["error", 4, { "SwitchCase": 1 }],      
-      "quote-props": ["error", "always"]
+      "quote-props": ["error", "always"],
+      "import/no-cycle": [0]
     },
     "settings": {
       "import/extensions": [".js",".jsx",".ts",".tsx"],

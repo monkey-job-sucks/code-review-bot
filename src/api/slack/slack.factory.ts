@@ -1,4 +1,3 @@
-/* eslint-disable import/no-cycle */
 import * as moment from 'moment';
 /* eslint-disable no-unused-vars */
 import { MessageAttachment } from '@slack/web-api';

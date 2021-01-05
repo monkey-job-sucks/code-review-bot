@@ -1,4 +1,3 @@
-/* eslint-disable import/no-cycle */
 /* eslint-disable no-unused-vars */
 import { BotWorker, BotkitMessage } from 'botkit';
 
@@ -8,10 +7,8 @@ import Sentry from '../../helpers/Sentry';
 import factory from './slack.factory';
 import { MergeRequest, IMergeRequestModel } from '../mongo';
 import { service as gitlab, IGitlabMergeRequest } from '../gitlab';
-import Message from '../../helpers/Message';
 /* eslint-enable no-unused-vars */
-
-const ALLOWED_CHANNELS = (process.env.SLACK_ALLOWED_CHANNELS || '').split(',');
+import Message from '../../helpers/Message';
 
 const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, messageId: string) => {
     const model = <IMergeRequestModel>{
@@ -104,27 +101,30 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
 };
 
 // eslint-disable-next-line consistent-return
-const slashCommandHandler = async (bot: BotWorker, message: BotkitMessage) => {
-    const start = Date.now();
+const slashCommandHandler = (allowedChannels: string) => {
+    const ALLOWED_CHANNELS = allowedChannels.split(',');
 
-    logger.info(JSON.stringify(message));
-    logger.info(message.command);
+    return async function slashCommandHandlerMiddleware(bot: BotWorker, message: BotkitMessage) {
+        const start = Date.now();
+        logger.info(JSON.stringify(message));
+        logger.info(message.command);
 
-    if (ALLOWED_CHANNELS.length > 0 && !ALLOWED_CHANNELS.includes(message.channel_name)) {
-        return slack.sendEphemeral(message, 'Não posso aceitar mensagens daqui :disappointed:');
-    }
+        bot.httpStatus(200);
 
-    bot.httpStatus(200);
+        if (ALLOWED_CHANNELS.length > 0 && !ALLOWED_CHANNELS.includes(message.channel_name)) {
+            return slack.sendEphemeral(message, 'Não posso aceitar mensagens daqui :disappointed:');
+        }
 
-    switch (message.command) {
-        case '/code-review':
-            await handleCodeReview(bot, message);
-            break;
-        default:
-            return bot.reply(message, 'Não sei fazer isso ainda :disappointed:');
-    }
+        switch (message.command) {
+            case '/code-review':
+                await handleCodeReview(bot, message);
+                break;
+            default:
+                return bot.reply(message, 'Não sei fazer isso ainda :disappointed:');
+        }
 
-    logger.info(`Took ${Date.now() - start}ms`);
+        return logger.info(`Took ${Date.now() - start}ms`);
+    };
 };
 
 export default {

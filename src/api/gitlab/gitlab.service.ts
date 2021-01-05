@@ -10,8 +10,9 @@ import {
     IGitlabMergeRequestReaction,
     IGitlabMergeRequestDiscussion,
 } from './gitlab.interfaces';
-import Message from '../../helpers/Message';
+import { ISettingsModel } from '../mongo';
 /* eslint-enable no-unused-vars */
+import Message from '../../helpers/Message';
 
 // TODO:
 // pegar discussions
@@ -25,10 +26,10 @@ class Gitlab {
 
     private api: AxiosInstance;
 
-    constructor() {
-        this.host = process.env.GITLAB_HOST;
-        this.token = process.env.GITLAB_PERSONAL_TOKEN;
-        this.apiVersion = process.env.GITLAB_API_VERSION;
+    public init(settings: ISettingsModel): void {
+        this.host = settings.gitlab.host;
+        this.token = settings.gitlab.personalToken;
+        this.apiVersion = settings.gitlab.apiVersion;
 
         this.api = axios.create({
             'baseURL': `${this.host}/api/${this.apiVersion}`,

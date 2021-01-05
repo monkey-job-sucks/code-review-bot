@@ -1,16 +1,11 @@
 import * as _ from 'lodash';
 
-import slackHelper from '../../api/slack/slack.helper';
-
 /* eslint-disable no-unused-vars */
 import { IFinishedReaction, IUpvoteReactions, IDiscussionReaction } from './fetch-updates.interface';
-import { IMergeRequestModel } from '../../api/mongo';
+import { IMergeRequestModel, ISettingsModel } from '../../api/mongo';
 import { IGitlabMergeRequestDetail, IGitlabMergeRequestReaction, IGitlabMergeRequestDiscussion } from '../../api/gitlab';
 /* eslint-enable no-unused-vars */
-
-const CLOSED_MR_REACTION = process.env.CLOSED_MR_REACTION || 'x';
-const MERGED_MR_REACTION = process.env.MERGED_MR_REACTION || 'heavy_check_mark';
-const DISCUSSION_MR_REACTION = process.env.DISCUSSION_MR_REACTION || 'speech_balloon';
+import slackHelper from '../../api/slack/slack.helper';
 
 const getUpvoteReactions = (
     currentMR: IMergeRequestModel,
@@ -56,6 +51,7 @@ const getUpvoteReactions = (
 };
 
 const getDiscussionReaction = (
+    settings: ISettingsModel,
     currentMR: IMergeRequestModel,
     remoteDiscussions: IGitlabMergeRequestDiscussion[],
 ): IDiscussionReaction => {
@@ -83,29 +79,36 @@ const getDiscussionReaction = (
 
     // if has an open discussion, add reaction
     // otherwise remove it
-    if (hasOpenDiscussion && !currentMR.slack.reactions.includes(DISCUSSION_MR_REACTION)) {
-        discussion.reactions.add.push(DISCUSSION_MR_REACTION);
-    } else if (!hasOpenDiscussion && currentMR.slack.reactions.includes(DISCUSSION_MR_REACTION)) {
-        discussion.reactions.remove.push(DISCUSSION_MR_REACTION);
+    const hasDiscussionReaction = currentMR.slack.reactions.includes(
+        settings.slack.reactions.discussion,
+    );
+
+    if (hasOpenDiscussion && !hasDiscussionReaction) {
+        discussion.reactions.add.push(settings.slack.reactions.discussion);
+    } else if (!hasOpenDiscussion && hasDiscussionReaction) {
+        discussion.reactions.remove.push(settings.slack.reactions.discussion);
     }
 
     return discussion;
 };
 
-const getFinishedReaction = (remoteMR: IGitlabMergeRequestDetail): IFinishedReaction => {
+const getFinishedReaction = (
+    settings: ISettingsModel,
+    remoteMR: IGitlabMergeRequestDetail,
+): IFinishedReaction => {
     const finished: IFinishedReaction = {};
 
     // check if already finished
     switch (remoteMR.state) {
         case 'merged':
-            finished.reaction = MERGED_MR_REACTION;
+            finished.reaction = settings.slack.reactions.merged;
             finished.merged = {
                 'at': new Date(remoteMR.merged_at),
                 'by': remoteMR.merged_by.username,
             };
             break;
         case 'closed':
-            finished.reaction = CLOSED_MR_REACTION;
+            finished.reaction = settings.slack.reactions.closed;
             finished.closed = {
                 'at': new Date(remoteMR.closed_at),
                 'by': remoteMR.closed_by.username,

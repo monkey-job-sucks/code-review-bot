@@ -15,8 +15,6 @@ import slackFactory from '../../api/slack/slack.factory';
 
 const JOB_NAME = 'rankings';
 
-const { NOTIFY_RANKING_CRON } = process.env;
-
 const fetchElegibleMRs = async (
     amount: number,
     unit: string,
@@ -57,9 +55,7 @@ const notifyRanking = async () => {
 };
 
 const rankingjob: IJobConfig = {
-    'isEnabled': () => !!NOTIFY_RANKING_CRON,
-    'when': NOTIFY_RANKING_CRON,
-    'function': async function ranking() {
+    'function': () => async function ranking() {
         if (jobManager.isRunning(JOB_NAME)) return false;
 
         jobManager.start(JOB_NAME);

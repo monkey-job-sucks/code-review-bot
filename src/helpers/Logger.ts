@@ -1,11 +1,11 @@
-/* eslint-disable import/no-cycle */
 import { EventEmitter } from 'events';
 // eslint-disable-next-line no-unused-vars
 import { BotkitMessage } from 'botkit';
 
-import { service as slack } from '../api/slack';
-
 /* eslint-disable no-unused-vars */
+import { ISettingsModel } from '../api/mongo';
+import { Slack } from '../api/slack/slack.service';
+
 enum ELevel {
     DEBUG = 'debug',
     INFO = 'info',
@@ -23,10 +23,14 @@ class Logger {
 
     private event: EventEmitter;
 
-    constructor() {
-        this.SHOULD_LOG_ON_SLACK = process.env.SHOULD_LOG_ON_SLACK === 'true';
-        this.SLACK_LOG_CHANNEL_ID = process.env.SLACK_LOG_CHANNEL_ID;
-        this.SLACK_LOG_MAX_TEXT_MESSAGE_SIZE = Number(process.env.SLACK_LOG_MAX_TEXT_MESSAGE_SIZE);
+    private slack: Slack;
+
+    public init(settings: ISettingsModel, slack: Slack) {
+        this.slack = slack;
+
+        this.SHOULD_LOG_ON_SLACK = settings.slack.log.enable;
+        this.SLACK_LOG_CHANNEL_ID = settings.slack.log.channelId;
+        this.SLACK_LOG_MAX_TEXT_MESSAGE_SIZE = settings.slack.log.maxTextMessageSize;
 
         this.event = new EventEmitter();
 
@@ -50,6 +54,7 @@ class Logger {
     private async log(level: ELevel, message: string) {
         const logKey = level === ELevel.DEBUG ? ELevel.INFO : level;
 
+        // eslint-disable-next-line no-console
         console[logKey](message);
 
         const canSendToSlack = this.SHOULD_LOG_ON_SLACK && level !== ELevel.DEBUG;
@@ -61,10 +66,10 @@ class Logger {
         const to = { 'channel': this.SLACK_LOG_CHANNEL_ID } as BotkitMessage;
 
         if (message.length >= this.SLACK_LOG_MAX_TEXT_MESSAGE_SIZE) {
-            return slack.sendSnippet(to, message, { 'filename': level });
+            return this.slack.sendSnippet(to, message, { 'filename': level });
         }
 
-        return slack.sendMessage(to, `[${level}] ${message}`);
+        return this.slack.sendMessage(to, `[${level}] ${message}`);
     }
 
     debug(message: string | any) {
