@@ -56,7 +56,7 @@ interface ISettingsSlackReactions {
 }
 
 interface ISettingsSlackLog {
-    enable: boolean;
+    enabled: boolean;
     channelId: string;
     maxTextMessageSize: number;
 }
