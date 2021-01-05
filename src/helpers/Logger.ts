@@ -53,13 +53,14 @@ class Logger {
 
     private async log(level: ELevel, message: string) {
         const logKey = level === ELevel.DEBUG ? ELevel.INFO : level;
+        const logMessage = `[${new Date().toISOString()}] ${message}`;
 
         // eslint-disable-next-line no-console
-        console[logKey](message);
+        console[logKey](logMessage);
 
         const canSendToSlack = this.SHOULD_LOG_ON_SLACK && level !== ELevel.DEBUG;
 
-        if (canSendToSlack) await this.sendToSlack(level, message);
+        if (canSendToSlack) await this.sendToSlack(level, logMessage);
     }
 
     private sendToSlack(level: ELevel, message: string) {
