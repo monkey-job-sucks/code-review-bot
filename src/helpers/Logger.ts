@@ -28,7 +28,7 @@ class Logger {
     public init(settings: ISettingsModel, slack: Slack) {
         this.slack = slack;
 
-        this.SHOULD_LOG_ON_SLACK = settings.slack.log.enable;
+        this.SHOULD_LOG_ON_SLACK = settings.slack.log.enabled;
         this.SLACK_LOG_CHANNEL_ID = settings.slack.log.channelId;
         this.SLACK_LOG_MAX_TEXT_MESSAGE_SIZE = settings.slack.log.maxTextMessageSize;
 

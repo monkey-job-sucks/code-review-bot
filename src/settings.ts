@@ -39,7 +39,7 @@ const DEFAULT_SETTINGS: Partial<ISettingsModel> = {
             'closed': 'x',
         },
         'log': {
-            'enable': false,
+            'enabled': false,
             'channelId': '',
             'maxTextMessageSize': 0,
         },
