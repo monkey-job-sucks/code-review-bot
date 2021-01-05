@@ -28,7 +28,7 @@ class Logger {
     public init(settings: ISettingsModel, slack: Slack) {
         this.slack = slack;
 
-        this.SHOULD_LOG_ON_SLACK = settings.slack.log.enable;
+        this.SHOULD_LOG_ON_SLACK = settings.slack.log.enabled;
         this.SLACK_LOG_CHANNEL_ID = settings.slack.log.channelId;
         this.SLACK_LOG_MAX_TEXT_MESSAGE_SIZE = settings.slack.log.maxTextMessageSize;
 
@@ -53,13 +53,14 @@ class Logger {
 
     private async log(level: ELevel, message: string) {
         const logKey = level === ELevel.DEBUG ? ELevel.INFO : level;
+        const logMessage = `[${new Date().toISOString()}] ${message}`;
 
         // eslint-disable-next-line no-console
-        console[logKey](message);
+        console[logKey](logMessage);
 
         const canSendToSlack = this.SHOULD_LOG_ON_SLACK && level !== ELevel.DEBUG;
 
-        if (canSendToSlack) await this.sendToSlack(level, message);
+        if (canSendToSlack) await this.sendToSlack(level, logMessage);
     }
 
     private sendToSlack(level: ELevel, message: string) {
