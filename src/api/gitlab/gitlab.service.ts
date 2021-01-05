@@ -2,6 +2,7 @@
 import axios, { AxiosInstance } from 'axios';
 
 import helper from './gitlab.helper';
+import Sentry from '../../helpers/Sentry';
 import {
     IGitlabMergeRequest,
     EGitlabMergeRequestResource,
@@ -9,8 +10,9 @@ import {
     IGitlabMergeRequestReaction,
     IGitlabMergeRequestDiscussion,
 } from './gitlab.interfaces';
-import Message from '../../helpers/Message';
+import { ISettingsModel } from '../mongo';
 /* eslint-enable no-unused-vars */
+import Message from '../../helpers/Message';
 
 // TODO:
 // pegar discussions
@@ -24,10 +26,10 @@ class Gitlab {
 
     private api: AxiosInstance;
 
-    constructor() {
-        this.host = process.env.GITLAB_HOST;
-        this.token = process.env.GITLAB_PERSONAL_TOKEN;
-        this.apiVersion = process.env.GITLAB_API_VERSION;
+    public init(settings: ISettingsModel): void {
+        this.host = settings.gitlab.host;
+        this.token = settings.gitlab.personalToken;
+        this.apiVersion = settings.gitlab.apiVersion;
 
         this.api = axios.create({
             'baseURL': `${this.host}/api/${this.apiVersion}`,
@@ -52,7 +54,32 @@ class Gitlab {
                 throw new Message('Não consegui identificar o mr nesse link :disappointed:');
             }
         } catch (err) {
-            if (err instanceof Message) throw err;
+            const captureOptions = {
+                'tags': {
+                    'fileName': 'gitlab.service',
+                },
+                'context': {
+                    'name': 'getMergeRequestDetail',
+                    'data': {
+                        'method': 'getUrlInfo',
+                        'url': url,
+                    },
+                },
+            };
+
+            if (err instanceof Message) {
+                Sentry.capture(err, {
+                    'level': Sentry.level.Warning,
+                    ...captureOptions,
+                });
+
+                throw err;
+            }
+
+            Sentry.capture(err, {
+                'level': Sentry.level.Error,
+                ...captureOptions,
+            });
 
             throw new Message('Tive um problema para identificar o mr nesse link :disappointed:');
         }
@@ -72,9 +99,34 @@ class Gitlab {
 
             return merge;
         } catch (err) {
+            const captureOptions = {
+                'tags': {
+                    'fileName': 'gitlab.service',
+                },
+                'context': {
+                    'name': 'getMergeRequestDetail',
+                    'data': {
+                        'url': url,
+                        'method': 'this.api',
+                        'encodedRepository': encodedRepository,
+                        'info': JSON.stringify(info),
+                    },
+                },
+            };
+
             if (err.response && err.response.status === 404) {
+                Sentry.capture(err, {
+                    'level': Sentry.level.Warning,
+                    ...captureOptions,
+                });
+
                 throw new Message('Não encontrei esse mr, o link está certo? :thinking_face:');
             }
+
+            Sentry.capture(err, {
+                'level': Sentry.level.Error,
+                ...captureOptions,
+            });
 
             throw new Message('Tive um problema pra buscar os detalhes desse mr :disappointed:');
         }

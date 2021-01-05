@@ -1,4 +1,4 @@
-FROM node:10-alpine as build-stage
+FROM node:14-alpine as build-stage
 
 WORKDIR /src
 

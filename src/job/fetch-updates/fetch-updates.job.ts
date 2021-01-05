@@ -1,13 +1,13 @@
-/* eslint-disable import/no-cycle */
 import helper from './fetch-updates.helper';
 import logger from '../../helpers/Logger';
+import Sentry from '../../helpers/Sentry';
 import { service as slack } from '../../api/slack';
 import jobManager from '../job-manager';
 
 /* eslint-disable no-unused-vars */
 import { IJobConfig } from '../job.interface';
 import { IRemoteInfo, IReactions } from './fetch-updates.interface';
-import { MergeRequest, IMergeRequestModel } from '../../api/mongo';
+import { MergeRequest, IMergeRequestModel, ISettingsModel } from '../../api/mongo';
 import { service as gitlab, IGitlabMergeRequestDetail } from '../../api/gitlab';
 /* eslint-enable no-unused-vars */
 
@@ -18,6 +18,7 @@ const fetchOpenMRs = () => MergeRequest.find({ 'done': false });
 const fetchSingleMR = (mr: IMergeRequestModel) => gitlab.getMergeRequestDetail(mr.url);
 
 const getRemoteInfo = async (
+    settings: ISettingsModel,
     currentMR: IMergeRequestModel,
     remoteMR: IGitlabMergeRequestDetail,
 ): Promise<IRemoteInfo> => {
@@ -34,8 +35,8 @@ const getRemoteInfo = async (
     ]);
 
     const upvoted = helper.getUpvoteReactions(currentMR, remoteReactions);
-    const finished = helper.getFinishedReaction(remoteMR);
-    const reviewed = helper.getDiscussionReaction(currentMR, remoteDiscussions);
+    const finished = helper.getFinishedReaction(settings, remoteMR);
+    const reviewed = helper.getDiscussionReaction(settings, currentMR, remoteDiscussions);
 
     remoteInfo.reactions.add = upvoted.reactions.add.concat(reviewed.reactions.add);
     remoteInfo.reactions.remove = upvoted.reactions.remove.concat(reviewed.reactions.remove);
@@ -62,6 +63,7 @@ const updateReactions = (
 }, []).concat(newReactions.add);
 
 const updateMR = async (
+    settings: ISettingsModel,
     currentMR: IMergeRequestModel,
     remoteMR: IGitlabMergeRequestDetail,
 ) => {
@@ -72,7 +74,7 @@ const updateMR = async (
             upvoters,
             reviewers,
             reactions,
-        } = await getRemoteInfo(currentMR, remoteMR);
+        } = await getRemoteInfo(settings, currentMR, remoteMR);
 
         await slack.removeReaction(
             JSON.parse(currentMR.rawSlackMessage), currentMR.slack.messageId, reactions.remove,
@@ -96,13 +98,27 @@ const updateMR = async (
 
         return currentMR.save();
     } catch (err) {
+        Sentry.capture(err, {
+            'level': Sentry.level.Error,
+            'tags': {
+                'fileName': 'fetch-updates.job',
+            },
+            'context': {
+                'name': 'updateMR',
+                'data': {
+                    'currentMR': JSON.stringify(currentMR),
+                    'remoteMR': JSON.stringify(remoteMR),
+                },
+            },
+        });
+
         logger.info(currentMR);
 
         return logger.error(err.stack || err);
     }
 };
 
-const updateOpenMRs = async (): Promise<number> => {
+const updateOpenMRs = async (settings: ISettingsModel): Promise<number> => {
     try {
         const openMRs: IMergeRequestModel[] = await fetchOpenMRs();
 
@@ -110,10 +126,23 @@ const updateOpenMRs = async (): Promise<number> => {
 
         const currentMRStatus = await Promise.all(openMRs.map(fetchSingleMR));
 
-        await Promise.all(openMRs.map((mr, i) => updateMR(mr, currentMRStatus[i].detail)));
+        await Promise.all(
+            openMRs.map((openMR, i) => updateMR(settings, openMR, currentMRStatus[i].detail)),
+        );
 
         return openMRs.length;
     } catch (err) {
+        Sentry.capture(err, {
+            'level': Sentry.level.Error,
+            'tags': {
+                'fileName': 'fetch-updates.job',
+            },
+            'context': {
+                'name': 'updateOpenMRs',
+                'data': {},
+            },
+        });
+
         logger.error(err.stack || err);
 
         return 0;
@@ -121,16 +150,14 @@ const updateOpenMRs = async (): Promise<number> => {
 };
 
 const fetchMRUpdatesJob: IJobConfig = {
-    'isEnabled': () => !!process.env.FETCH_MR_UPDATES_CRON,
-    'when': process.env.FETCH_MR_UPDATES_CRON,
-    'function': async function fetchMRUpdates() {
+    'function': (settings: ISettingsModel) => async function fetchMRUpdates() {
         if (jobManager.isRunning(JOB_NAME)) return false;
 
         jobManager.start(JOB_NAME);
 
-        const openMRsAmount = await updateOpenMRs();
+        const openMRsAmount = await updateOpenMRs(settings);
 
-        logger.debug(`[fetchMRUpdates] Got ${openMRsAmount} mrs`);
+        jobManager.log(JOB_NAME, `Got ${openMRsAmount} mrs`);
 
         jobManager.stop(JOB_NAME);
 

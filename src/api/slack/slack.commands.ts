@@ -1,16 +1,14 @@
-/* eslint-disable import/no-cycle */
 /* eslint-disable no-unused-vars */
 import { BotWorker, BotkitMessage } from 'botkit';
 
 import slack from './slack.service';
 import logger from '../../helpers/Logger';
+import Sentry from '../../helpers/Sentry';
 import factory from './slack.factory';
 import { MergeRequest, IMergeRequestModel } from '../mongo';
 import { service as gitlab, IGitlabMergeRequest } from '../gitlab';
-import Message from '../../helpers/Message';
 /* eslint-enable no-unused-vars */
-
-const ALLOWED_CHANNELS = (process.env.SLACK_ALLOWED_CHANNELS || '').split(',');
+import Message from '../../helpers/Message';
 
 const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, messageId: string) => {
     const model = <IMergeRequestModel>{
@@ -68,11 +66,33 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
 
         return document;
     } catch (err) {
+        const captureOptions = {
+            'tags': {
+                'command': '/code-review',
+            },
+            'context': {
+                'name': 'handleCodeReview',
+                'data': {
+                    'message': message.text,
+                },
+            },
+        };
+
         if (err instanceof Message) {
             logger.info(err);
 
+            Sentry.capture(err, {
+                'level': Sentry.level.Warning,
+                ...captureOptions,
+            });
+
             return slack.sendEphemeral(message, err.message);
         }
+
+        Sentry.capture(err, {
+            'level': Sentry.level.Error,
+            ...captureOptions,
+        });
 
         logger.error(err.stack || err);
 
@@ -81,24 +101,30 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
 };
 
 // eslint-disable-next-line consistent-return
-const slashCommandHandler = async (bot: BotWorker, message: BotkitMessage) => {
-    const start = Date.now();
-    logger.info(JSON.stringify(message));
-    logger.info(message.command);
+const slashCommandHandler = (allowedChannels: string) => {
+    const ALLOWED_CHANNELS = allowedChannels.split(',');
 
-    if (ALLOWED_CHANNELS.length > 0 && !ALLOWED_CHANNELS.includes(message.channel_name)) {
-        return slack.sendEphemeral(message, 'Não posso aceitar mensagens daqui :disappointed:');
-    }
+    return async function slashCommandHandlerMiddleware(bot: BotWorker, message: BotkitMessage) {
+        const start = Date.now();
+        logger.info(JSON.stringify(message));
+        logger.info(message.command);
 
-    switch (message.command) {
-        case '/code-review':
-            await handleCodeReview(bot, message);
-            break;
-        default:
-            return bot.reply(message, 'Não sei fazer isso ainda :disappointed:');
-    }
+        bot.httpStatus(200);
 
-    logger.info(`Took ${Date.now() - start}ms`);
+        if (ALLOWED_CHANNELS.length > 0 && !ALLOWED_CHANNELS.includes(message.channel_name)) {
+            return slack.sendEphemeral(message, 'Não posso aceitar mensagens daqui :disappointed:');
+        }
+
+        switch (message.command) {
+            case '/code-review':
+                await handleCodeReview(bot, message);
+                break;
+            default:
+                return bot.reply(message, 'Não sei fazer isso ainda :disappointed:');
+        }
+
+        return logger.info(`Took ${Date.now() - start}ms`);
+    };
 };
 
 export default {

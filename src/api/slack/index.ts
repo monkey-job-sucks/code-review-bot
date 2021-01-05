@@ -1,4 +1,3 @@
-/* eslint-disable import/no-cycle */
 import service from './slack.service';
 import factory from './slack.factory';
 import helper from './slack.helper';

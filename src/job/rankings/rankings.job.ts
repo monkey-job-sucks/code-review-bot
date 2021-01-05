@@ -10,11 +10,10 @@ import jobManager from '../job-manager';
 import slack from '../../api/slack/slack.service';
 import helper from './rankings.helper';
 import logger from '../../helpers/Logger';
+import Sentry from '../../helpers/Sentry';
 import slackFactory from '../../api/slack/slack.factory';
 
 const JOB_NAME = 'rankings';
-
-const { NOTIFY_RANKING_CRON } = process.env;
 
 const fetchElegibleMRs = async (
     amount: number,
@@ -40,14 +39,23 @@ const notifyRanking = async () => {
             return slack.sendMessage({ 'channel': mr.channel } as BotkitMessage, message);
         }));
     } catch (err) {
+        Sentry.capture(err, {
+            'level': Sentry.level.Error,
+            'tags': {
+                'fileName': 'rankings.job',
+            },
+            'context': {
+                'name': 'notifyRanking',
+                'data': {},
+            },
+        });
+
         return logger.error(err.stack || err);
     }
 };
 
 const rankingjob: IJobConfig = {
-    'isEnabled': () => !!NOTIFY_RANKING_CRON,
-    'when': NOTIFY_RANKING_CRON,
-    'function': async function ranking() {
+    'function': () => async function ranking() {
         if (jobManager.isRunning(JOB_NAME)) return false;
 
         jobManager.start(JOB_NAME);

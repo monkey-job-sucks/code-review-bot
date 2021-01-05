@@ -1,7 +1,9 @@
-/* eslint-disable import/no-cycle */
 // eslint-disable-next-line no-unused-vars
 import { CronJob, CronCommand } from 'cron';
 
+/* eslint-disable no-unused-vars */
+import { ISettingsModel } from '../api/mongo';
+/* eslint-enable no-unused-vars */
 import rankingJob from './rankings/rankings.job';
 import notifyOpenMRs from './notify-open-mrs/notify-open-mrs.job';
 import fetchMRUpdatesJob from './fetch-updates/fetch-updates.job';
@@ -12,8 +14,6 @@ interface IJobs {
     fetchMRUpdates?: CronJob;
 }
 
-const { TIMEZONE } = process.env;
-
 const AUTO_START = true;
 const ON_COMPLETE = () => {};
 
@@ -22,22 +22,37 @@ const buildCronJob = (
     onTick: CronCommand,
     onComplete = ON_COMPLETE,
     autoStart = AUTO_START,
-    timezone = TIMEZONE,
+    timezone = process.env.TIMEZONE,
 ) => new CronJob(cronTime, onTick, onComplete, autoStart, timezone);
 
 const jobs: IJobs = {};
 
-const start = (): IJobs => {
-    if (rankingJob.isEnabled()) {
-        jobs.ranking = buildCronJob(rankingJob.when, rankingJob.function);
+const start = (settings: ISettingsModel): IJobs => {
+    const {
+        openRequests,
+        notifyRanking,
+        fetchRequestsUpdates,
+    } = settings.cron;
+
+    if (notifyRanking.enabled) {
+        jobs.ranking = buildCronJob(
+            notifyRanking.pattern,
+            rankingJob.function(settings),
+        );
     }
 
-    if (notifyOpenMRs.isEnabled()) {
-        jobs.fetchMRUpdates = buildCronJob(notifyOpenMRs.when, notifyOpenMRs.function);
+    if (openRequests.enabled) {
+        jobs.fetchMRUpdates = buildCronJob(
+            openRequests.pattern,
+            notifyOpenMRs.function(settings),
+        );
     }
 
-    if (fetchMRUpdatesJob.isEnabled()) {
-        jobs.fetchMRUpdates = buildCronJob(fetchMRUpdatesJob.when, fetchMRUpdatesJob.function);
+    if (fetchRequestsUpdates.enabled) {
+        jobs.fetchMRUpdates = buildCronJob(
+            fetchRequestsUpdates.pattern,
+            fetchMRUpdatesJob.function(settings),
+        );
     }
 
     return jobs;
