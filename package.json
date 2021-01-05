@@ -52,7 +52,7 @@
     "@sentry/tracing": "5.29.2",
     "@slack/web-api": "5.2.1",
     "axios": "0.19.0",
-    "botbuilder-adapter-slack": "1.0.4",
+    "botbuilder-adapter-slack": "1.0.5",
     "botkit": "4.5.0",
     "cron": "1.7.2",
     "lodash": "4.17.15",
