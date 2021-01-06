@@ -2,7 +2,7 @@
 import { BotkitMessage } from 'botkit';
 import * as moment from 'moment';
 
-import { MergeRequest, IChannelMergeRequests, ISettingsModel } from '../../api/mongo';
+import { ReviewRequest, IChannelMergeRequests, ISettingsModel } from '../../api/mongo';
 import { service as slack, factory as slackFactory } from '../../api/slack';
 import { IJobConfig } from '../job.interface';
 /* eslint-enable no-unused-vars */
@@ -18,7 +18,7 @@ const fetchDelayedMRs = (
 ): Promise<IChannelMergeRequests[]> => {
     const cutDate = moment().subtract(hours, 'hours').toDate();
 
-    return MergeRequest.aggregate()
+    return ReviewRequest.aggregate()
         .match({
             'done': false,
             'added.at': { '$lte': cutDate },
