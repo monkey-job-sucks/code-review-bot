@@ -26,9 +26,10 @@ const slackSchema = new Schema({
 // colocar mergedat e closeat na mesma data e tratar por status
 // trocar os campos raw por um "any", Mixed não funcionou :(
 const schema = new Schema({
-    'rawMergeRequest': String,
+    'rawReviewRequest': String,
     'rawSlackMessage': String,
     'url': String,
+    'origin': String,
     'repository': String,
     'id': String,
     'iid': String,

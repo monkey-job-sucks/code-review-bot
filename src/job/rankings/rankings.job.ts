@@ -3,7 +3,7 @@ import * as moment from 'moment';
 import { BotkitMessage } from 'botkit';
 
 import { IRanking } from './rankings.interface';
-import { MergeRequest, IMergeRequestModel } from '../../api/mongo';
+import { ReviewRequest, IMergeRequestModel } from '../../api/mongo';
 import { IJobConfig } from '../job.interface';
 /* eslint-enable no-unused-vars */
 import jobManager from '../job-manager';
@@ -22,7 +22,7 @@ const fetchElegibleMRs = async (
 ): Promise<IRanking[]> => {
     const cutDate = moment().subtract(amount as any, unit as any).toDate();
 
-    const elegibles: IMergeRequestModel[] = await MergeRequest.aggregate()
+    const elegibles: IMergeRequestModel[] = await ReviewRequest.aggregate()
         .match({ 'merged.at': { '$gte': cutDate } })
         .exec();
 

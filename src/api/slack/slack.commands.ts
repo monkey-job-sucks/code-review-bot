@@ -5,15 +5,16 @@ import slack from './slack.service';
 import logger from '../../helpers/Logger';
 import Sentry from '../../helpers/Sentry';
 import factory from './slack.factory';
-import { MergeRequest, IMergeRequestModel } from '../mongo';
+import { ReviewRequest, IMergeRequestModel } from '../mongo';
 import { service as gitlab, IGitlabMergeRequest } from '../gitlab';
 /* eslint-enable no-unused-vars */
 import Message from '../../helpers/Message';
 
 const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, messageId: string) => {
-    const model = <IMergeRequestModel>{
+    const model = {
         'rawMergeRequest': JSON.stringify(mr),
         'rawSlackMessage': JSON.stringify(message),
+        'origin': 'gitlab',
         'url': message.text,
         'repository': mr.repository,
         'id': String(mr.detail.id),
@@ -33,15 +34,15 @@ const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, mess
             },
             'messageId': String(messageId),
         },
-    };
+    } as unknown as IMergeRequestModel;
 
-    const mergeRequest = new MergeRequest(model);
+    const reviewRequest = new ReviewRequest(model);
 
-    return mergeRequest.save();
+    return reviewRequest.save();
 };
 
 const validateMr = async (message: BotkitMessage, mr: IGitlabMergeRequest): Promise<void> => {
-    const document = await MergeRequest.find({
+    const document = await ReviewRequest.find({
         'id': mr.detail.id,
         'repository': mr.repository,
     });
