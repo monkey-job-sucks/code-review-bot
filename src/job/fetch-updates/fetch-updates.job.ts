@@ -7,13 +7,13 @@ import jobManager from '../job-manager';
 /* eslint-disable no-unused-vars */
 import { IJobConfig } from '../job.interface';
 import { IRemoteInfo, IReactions } from './fetch-updates.interface';
-import { MergeRequest, IMergeRequestModel, ISettingsModel } from '../../api/mongo';
+import { ReviewRequest, IMergeRequestModel, ISettingsModel } from '../../api/mongo';
 import { service as gitlab, IGitlabMergeRequestDetail } from '../../api/gitlab';
 /* eslint-enable no-unused-vars */
 
 const JOB_NAME = 'fetch-updates';
 
-const fetchOpenMRs = () => MergeRequest.find({ 'done': false });
+const fetchOpenMRs = () => ReviewRequest.find({ 'done': false });
 
 const fetchSingleMR = (mr: IMergeRequestModel) => gitlab.getMergeRequestDetail(mr.url);
 
