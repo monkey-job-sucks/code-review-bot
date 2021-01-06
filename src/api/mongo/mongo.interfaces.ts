@@ -1,20 +1,24 @@
 // eslint-disable-next-line no-unused-vars
 import { Document } from 'mongoose';
 
-export interface IMergeRequestModel extends Document {
-    rawMergeRequest: string;
+interface IReviewRequestModel extends Document {
+    rawReviewRequest: string;
     rawSlackMessage: string;
-    url: string;
-    repository: string;
+    origin: 'gitlab' | 'azure';
     id: string;
     iid: string;
-    created: IMergeRequestModelActionLog;
-    added: IMergeRequestModelActionLog;
-    merged?: IMergeRequestModelActionLog;
-    closed?: IMergeRequestModelActionLog;
-    slack: IMergeRequestModelSlack;
+    url: string;
+    created: IReviewRequestModelActionLog;
+    added: IReviewRequestModelActionLog;
+    merged?: IReviewRequestModelActionLog;
+    closed?: IReviewRequestModelActionLog;
+    slack: IReviewRequestModelSlack;
+    analytics?: IReviewRequestModelAnalytics;
     done?: boolean;
-    analytics?: IMergeRequestModelAnalytics;
+}
+
+export interface IMergeRequestModel extends IReviewRequestModel {
+    repository: string;
 }
 
 export interface IChannelMergeRequests {
@@ -22,17 +26,17 @@ export interface IChannelMergeRequests {
     mrs?: IMergeRequestModel[];
 }
 
-export interface IMergeRequestModelActionLog {
+export interface IReviewRequestModelActionLog {
     at: Date;
     by: string;
 }
 
-interface IMergeRequestModelAnalytics {
+interface IReviewRequestModelAnalytics {
     upvoters: string[];
     reviewers: string[];
 }
 
-interface IMergeRequestModelSlack {
+interface IReviewRequestModelSlack {
     messageId: string;
     reactions?: string[];
     channel: IMergeRequestModelSlackChannel;
