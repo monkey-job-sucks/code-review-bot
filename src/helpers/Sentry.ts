@@ -37,14 +37,16 @@ const capture = (exception: unknown, options: CaptureOptions) => {
 
     const context = Context.getContext();
 
-    captureOptions.tags.contextId = context.id;
+    if (context) {
+        captureOptions.tags.contextId = context.id;
 
-    captureOptions.user = {
-        'id': `${context.user.team.id}|${context.user.channel.id}|${context.user.id}`,
-        'name': context.user.name,
-        'team': context.user.team,
-        'channel': context.user.channel,
-    };
+        captureOptions.user = {
+            'id': `${context.user.team.id}|${context.user.channel.id}|${context.user.id}`,
+            'name': context.user.name,
+            'team': context.user.team,
+            'channel': context.user.channel,
+        };
+    }
 
     if (options.context) {
         captureOptions.contexts = {};
