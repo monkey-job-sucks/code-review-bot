@@ -91,8 +91,15 @@ interface ISettingsModelCron {
     fetchRequestsUpdates: ISettingsModelCronBase,
 }
 
+interface ISettingsAzure {
+    host: string;
+    apiVersion: string;
+    personalToken: string;
+}
+
 export interface ISettingsModel extends Document {
     cron: ISettingsModelCron,
-    gitlab: ISettingsGitlab,
+    gitlab?: ISettingsGitlab,
+    azure?: ISettingsAzure,
     slack: ISettingsSlack,
 }
