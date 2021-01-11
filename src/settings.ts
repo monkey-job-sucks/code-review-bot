@@ -26,6 +26,11 @@ const DEFAULT_SETTINGS: Partial<ISettingsModel> = {
         'apiVersion': '',
         'personalToken': '',
     },
+    'azure': {
+        'host': '',
+        'apiVersion': '',
+        'personalToken': '',
+    },
     'slack': {
         'secret': '',
         'token': '',
@@ -60,6 +65,7 @@ export const loadSettings = async (): Promise<ISettingsModel> => {
 
     settings.cron = document.cron;
     settings.gitlab = document.gitlab;
+    settings.azure = document.azure;
     settings.slack = document.slack;
 
     return settings as ISettingsModel;
