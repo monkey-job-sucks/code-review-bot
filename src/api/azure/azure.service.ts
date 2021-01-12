@@ -42,7 +42,7 @@ class Azure {
     public async getPullRequestDetail(url: string): Promise<IAzurePullRequest> {
         try {
             if (!url.startsWith(this.host)) {
-                throw new Message('Não posso aceitar mrs desse git :disappointed:');
+                throw new Message('Não posso aceitar prs desse git :disappointed:');
             }
 
             const info = helper.getUrlInfo(this.host, url);
