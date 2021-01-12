@@ -28,7 +28,7 @@ const getThreads = (pullRequestThreads: IAzureThread): IAzurePullRequestThread[]
 
     const threads: IAzurePullRequestThread[] = value
         .reduce((prthreads: IAzurePullRequestThread[], thread) => {
-            if (thread.comments && thread.comments[0] && thread.comments[0].commentType !== 'system') {
+            if (thread?.comments[0]?.commentType !== 'system') {
                 prthreads.push({
                     'status': thread.status,
                     'comments': thread.comments.map((comment) => ({
