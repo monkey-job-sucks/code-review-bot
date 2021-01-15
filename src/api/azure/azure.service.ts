@@ -29,7 +29,7 @@ class Azure {
         this.apiVersion = settings.azure.apiVersion;
 
         this.api = axios.create({
-            'baseURL': `${this.host}/api/${this.apiVersion}`,
+            'baseURL': this.host,
             'headers': {
                 'Authorization': `Basic ${this.token}`,
             },
@@ -39,9 +39,13 @@ class Azure {
         });
     }
 
+    public itsMine(url: string): boolean {
+        return url.startsWith(this.host);
+    }
+
     public async getPullRequestDetail(url: string): Promise<IAzurePullRequest> {
         try {
-            if (!url.startsWith(this.host)) {
+            if (!this.itsMine(url)) {
                 throw new Message('Não posso aceitar prs desse git :disappointed:');
             }
 
@@ -57,6 +61,8 @@ class Azure {
             });
 
             return {
+                'info': info,
+                'url': `${this.host}/${info.organization}/${info.project}/_git/${response.data.repository.name}/pullrequest/${info.id}`,
                 'repository': `${info.organization}/${info.project}/${info.repository}`,
                 'detail': response.data,
             };

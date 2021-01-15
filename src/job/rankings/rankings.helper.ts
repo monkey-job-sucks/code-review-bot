@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { IRanking, IRankingAnalyticsSum } from './rankings.interface';
-import { IMergeRequestModel } from '../../api/mongo';
+import { IReviewRequestModel } from '../../api/mongo';
 /* eslint-enable no-unused-vars */
 
 const sortRanking = (
@@ -8,7 +8,7 @@ const sortRanking = (
 ): number => (currentRanking.total > nextRanking.total ? -1 : 1);
 
 const getTotalByKey = (
-    currentMR: IMergeRequestModel,
+    currentMR: IReviewRequestModel,
     currentAnalyticsSum: IRankingAnalyticsSum[],
     key: 'upvoters' | 'reviewers',
 ) => currentMR.analytics[key].reduce((analyticsSum: IRankingAnalyticsSum[], username: string) => {
@@ -27,9 +27,9 @@ const getTotalByKey = (
 }, currentAnalyticsSum);
 
 const groupByAnalytics = (
-    mrs: IMergeRequestModel[],
+    mrs: IReviewRequestModel[],
     period: string,
-): IRanking[] => mrs.reduce((grouped: IRanking[], current: IMergeRequestModel) => {
+): IRanking[] => mrs.reduce((grouped: IRanking[], current: IReviewRequestModel) => {
     let channel = grouped.find((g) => g.channel === current.slack.channel.id);
 
     if (!channel) {

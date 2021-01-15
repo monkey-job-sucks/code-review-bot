@@ -3,7 +3,7 @@ import * as moment from 'moment';
 import { MessageAttachment } from '@slack/web-api';
 
 import { IGitlabMergeRequest } from '../gitlab';
-import { IChannelMergeRequests } from '../mongo';
+import { IChannelReviewRequests } from '../mongo';
 import { IRanking } from '../../job/rankings/rankings.interface';
 /* eslint-enable no-unused-vars */
 
@@ -11,29 +11,29 @@ moment.locale('pt-br');
 
 const rankingEmojis = [':first_place_medal:', ':second_place_medal:', ':third_place_medal:'];
 
-const generateAddedMergeRequestMessage = (
-    user: string,
-    mr: IGitlabMergeRequest,
+const generateAddedReviewRequestMessage = (
+    slackUser: string,
+    id: number,
+    repository: string,
+    url: string,
 ): MessageAttachment => {
-    const { repository, detail } = mr;
-
-    const title = `<@${user}> adicionou o MR #${detail.iid} ${repository}`;
+    const title = `<@${slackUser}> adicionou #${id} ${repository}`;
 
     return {
         'title': title,
-        'title_link': detail.web_url,
+        'title_link': url,
     };
 };
 
-const generateDelayedMergeRequestsMessage = (delayedMrs: IChannelMergeRequests): string => {
+const generateDelayedReviewRequestsMessage = (delayedRequests: IChannelReviewRequests): string => {
     const messages: string[] = [];
 
     messages.push('<!here>, ainda temos MRs abertos:');
 
-    delayedMrs.mrs.forEach((mr) => {
+    delayedRequests.mrs.forEach((mr) => {
         const openedSince = moment(mr.added.at).fromNow();
 
-        messages.push(`<${mr.url}|#${mr.iid} ${mr.repository}> adicionado ${openedSince}`);
+        messages.push(`<${mr.url}|#${mr.gitlab.iid} ${mr.repository}> adicionado ${openedSince}`);
     });
 
     return messages.join('\r');
@@ -70,6 +70,6 @@ const generateRankingMessage = (ranking: IRanking): string => {
 
 export default {
     generateRankingMessage,
-    generateAddedMergeRequestMessage,
-    generateDelayedMergeRequestsMessage,
+    generateAddedReviewRequestMessage,
+    generateDelayedReviewRequestsMessage,
 };

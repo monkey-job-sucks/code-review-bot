@@ -85,6 +85,8 @@ export interface IAzurePullRequestDetail {
 }
 
 export interface IAzurePullRequest {
+    info: IAzurePullRequestUrlInfo;
+    url: string;
     repository: string;
     detail: IAzurePullRequestDetail;
 }

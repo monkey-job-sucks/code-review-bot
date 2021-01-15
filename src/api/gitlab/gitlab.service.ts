@@ -39,12 +39,16 @@ class Gitlab {
         });
     }
 
+    public itsMine(url: string): boolean {
+        return url.startsWith(this.host);
+    }
+
     // TODO: aceitar url ou repository e id
     public async getMergeRequestDetail(url: string): Promise<IGitlabMergeRequest> {
         let info: IGitlabMergeRequestUrlInfo;
 
         try {
-            if (!url.startsWith(this.host)) {
+            if (!this.itsMine(url)) {
                 throw new Message('Não posso aceitar mrs desse git :disappointed:');
             }
 
@@ -92,12 +96,12 @@ class Gitlab {
                 'url': `/projects/${encodedRepository}/merge_requests/${info.id}/${EGitlabMergeRequestResource.DETAIL}`,
             });
 
-            const merge = {
+            return {
+                'info': info,
+                'url': response.data.web_url,
                 'repository': info.repository,
                 'detail': response.data,
             };
-
-            return merge;
         } catch (err) {
             const captureOptions = {
                 'tags': {
