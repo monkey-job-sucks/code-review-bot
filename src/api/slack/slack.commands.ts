@@ -4,68 +4,33 @@ import { BotWorker, BotkitMessage } from 'botkit';
 import slack from './slack.service';
 import logger from '../../helpers/Logger';
 import Sentry from '../../helpers/Sentry';
-import factory from './slack.factory';
-import { ReviewRequest, IMergeRequestModel } from '../mongo';
-import { service as gitlab, IGitlabMergeRequest } from '../gitlab';
+import {
+    EReviewRequestOrigin,
+} from '../mongo';
+import { service as gitlab } from '../gitlab';
+import { service as azure } from '../azure';
 /* eslint-enable no-unused-vars */
 import Message from '../../helpers/Message';
-
-const saveOnMongo = async (mr: IGitlabMergeRequest, message: BotkitMessage, messageId: string) => {
-    const model = {
-        'rawMergeRequest': JSON.stringify(mr),
-        'rawSlackMessage': JSON.stringify(message),
-        'origin': 'gitlab',
-        'url': message.text,
-        'repository': mr.repository,
-        'id': String(mr.detail.id),
-        'iid': String(mr.detail.iid),
-        'created': {
-            'at': new Date(mr.detail.created_at),
-            'by': mr.detail.author.username,
-        },
-        'added': {
-            'at': new Date(),
-            'by': message.user,
-        },
-        'slack': {
-            'channel': {
-                'id': message.channel_id,
-                'name': message.channel_name,
-            },
-            'messageId': String(messageId),
-        },
-    } as unknown as IMergeRequestModel;
-
-    const reviewRequest = new ReviewRequest(model);
-
-    return reviewRequest.save();
-};
-
-const validateMr = async (message: BotkitMessage, mr: IGitlabMergeRequest): Promise<void> => {
-    const document = await ReviewRequest.find({
-        'id': mr.detail.id,
-        'repository': mr.repository,
-    });
-
-    const hasMROnMongo = document.length > 0;
-
-    if (hasMROnMongo) throw new Message('Já estou cuidando desse MR :wink:');
-};
+import helper from './slack.commands.helper';
 
 // TODO: receive hashtags
 const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
     try {
-        const mr = await gitlab.getMergeRequestDetail(message.text);
+        const url = message.text;
 
-        await validateMr(message, mr);
+        let origin: EReviewRequestOrigin;
 
-        const slackMessage = factory.generateAddedMergeRequestMessage(message.user, mr);
+        if (gitlab.itsMine(url)) origin = EReviewRequestOrigin.GITLAB;
+        if (azure.itsMine(url)) origin = EReviewRequestOrigin.AZURE;
 
-        const { id } = await slack.mergeAdded(bot, message, slackMessage);
-
-        const document = await saveOnMongo(mr, message, id);
-
-        return document;
+        switch (origin) {
+            case EReviewRequestOrigin.GITLAB:
+                return helper.saveGitlabMR(bot, message);
+            case EReviewRequestOrigin.AZURE:
+                return helper.saveAzurePR(bot, message);
+            default:
+                throw new Message('Não posso aceitar links desse git :disappointed:');
+        }
     } catch (err) {
         const captureOptions = {
             'tags': {
@@ -107,6 +72,7 @@ const slashCommandHandler = (allowedChannels: string) => {
 
     return async function slashCommandHandlerMiddleware(bot: BotWorker, message: BotkitMessage) {
         const start = Date.now();
+
         logger.info(JSON.stringify(message));
         logger.info(message.command);
 

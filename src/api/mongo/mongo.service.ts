@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose';
 /* eslint-disable no-unused-vars */
 import {
     ISettingsModel,
-    IMergeRequestModel,
+    IReviewRequestModel,
 } from './mongo.interfaces';
 /* eslint-enable no-unused-vars */
 import reviewRequestSchema from './schemas/review-request.schema';
@@ -28,7 +28,7 @@ mongoose.connect(process.env.MONGO_URI, {
 mongoose.connection.on('error', handleMongoError);
 
 const reviewRequestCollectionName = buildCollectionName('ReviewRequest');
-export const ReviewRequest = mongoose.model<IMergeRequestModel>(
+export const ReviewRequest = mongoose.model<IReviewRequestModel>(
     reviewRequestCollectionName,
     reviewRequestSchema,
     reviewRequestCollectionName,

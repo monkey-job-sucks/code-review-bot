@@ -2,7 +2,7 @@
 import { BotkitMessage } from 'botkit';
 import * as moment from 'moment';
 
-import { ReviewRequest, IChannelMergeRequests, ISettingsModel } from '../../api/mongo';
+import { ReviewRequest, IReviewRequestModel, ISettingsModel } from '../../api/mongo';
 import { service as slack, factory as slackFactory } from '../../api/slack';
 import { IJobConfig } from '../job.interface';
 /* eslint-enable no-unused-vars */
@@ -15,7 +15,7 @@ const JOB_NAME = 'notify-open-mrs';
 const fetchDelayedMRs = (
     hours: number,
     discussionReaction: string,
-): Promise<IChannelMergeRequests[]> => {
+): Promise<IReviewRequestModel[]> => {
     const cutDate = moment().subtract(hours, 'hours').toDate();
 
     return ReviewRequest.aggregate()
@@ -29,8 +29,8 @@ const fetchDelayedMRs = (
         .exec();
 };
 
-const notifyChannel = (channelMRs: IChannelMergeRequests) => {
-    const message = slackFactory.generateDelayedMergeRequestsMessage(channelMRs);
+const notifyChannel = (channelMRs: IReviewRequestModel) => {
+    const message = slackFactory.generateDelayedReviewRequestsMessage(channelMRs);
 
     // eslint-disable-next-line no-underscore-dangle
     return slack.sendMessage({ 'channel': channelMRs._id } as BotkitMessage, message);

@@ -7,7 +7,7 @@ import jobManager from '../job-manager';
 /* eslint-disable no-unused-vars */
 import { IJobConfig } from '../job.interface';
 import { IRemoteInfo, IReactions } from './fetch-updates.interface';
-import { ReviewRequest, IMergeRequestModel, ISettingsModel } from '../../api/mongo';
+import { ReviewRequest, IReviewRequestModel, ISettingsModel } from '../../api/mongo';
 import { service as gitlab, IGitlabMergeRequestDetail } from '../../api/gitlab';
 /* eslint-enable no-unused-vars */
 
@@ -15,11 +15,11 @@ const JOB_NAME = 'fetch-updates';
 
 const fetchOpenMRs = () => ReviewRequest.find({ 'done': false });
 
-const fetchSingleMR = (mr: IMergeRequestModel) => gitlab.getMergeRequestDetail(mr.url);
+const fetchSingleMR = (mr: IReviewRequestModel) => gitlab.getMergeRequestDetail(mr.url);
 
 const getRemoteInfo = async (
     settings: ISettingsModel,
-    currentMR: IMergeRequestModel,
+    currentMR: IReviewRequestModel,
     remoteMR: IGitlabMergeRequestDetail,
 ): Promise<IRemoteInfo> => {
     const remoteInfo: IRemoteInfo = {
@@ -64,7 +64,7 @@ const updateReactions = (
 
 const updateMR = async (
     settings: ISettingsModel,
-    currentMR: IMergeRequestModel,
+    currentMR: IReviewRequestModel,
     remoteMR: IGitlabMergeRequestDetail,
 ) => {
     try {
@@ -120,7 +120,7 @@ const updateMR = async (
 
 const updateOpenMRs = async (settings: ISettingsModel): Promise<number> => {
     try {
-        const openMRs: IMergeRequestModel[] = await fetchOpenMRs();
+        const openMRs: IReviewRequestModel[] = await fetchOpenMRs();
 
         if (openMRs.length === 0) return 0;
 

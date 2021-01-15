@@ -1,5 +1,6 @@
 import { service as slackService } from './api/slack';
 import { service as gitlabService } from './api/gitlab';
+import { service as azureService } from './api/azure';
 import logger from './helpers/Logger';
 import sentry from './helpers/Sentry';
 import job from './job';
@@ -13,6 +14,7 @@ sentry.init(process.env.SENTRY_URL);
     logger.init(settings, slackService);
 
     gitlabService.init(settings);
+    azureService.init(settings);
 
     await slackService.load(settings);
 
