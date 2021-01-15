@@ -2,7 +2,7 @@ import settings from '../../__mocks__/settings';
 
 import helper from '../../../src/job/fetch-updates/fetch-updates.helper';
 
-import { IMergeRequestModel } from '../../../src/api/mongo';
+import { IReviewRequestModel } from '../../../src/api/mongo';
 import { IGitlabMergeRequestDetail, IGitlabMergeRequestReaction, IGitlabUser, IGitlabMergeRequestDiscussion } from '../../../src/api/gitlab';
 
 const UPVOTE_MR_REACTION = 'thumbsup';
@@ -32,7 +32,7 @@ const getUserUpvote = (user: IGitlabUser): IGitlabMergeRequestReaction => {
 };
 
 describe('fetch-updates.job', () => {
-    let currentMR: IMergeRequestModel;
+    let currentMR: IReviewRequestModel;
     let remoteMR: IGitlabMergeRequestDetail;
 
     beforeEach(() => {
@@ -44,7 +44,7 @@ describe('fetch-updates.job', () => {
             'slack': {
                 'reactions': [],
             },
-        } as IMergeRequestModel;
+        } as IReviewRequestModel;
 
         remoteMR = {
             'upvotes': 0,

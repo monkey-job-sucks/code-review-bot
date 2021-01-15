@@ -1,12 +1,19 @@
-// eslint-disable-next-line no-unused-vars
+/* eslint-disable import/prefer-default-export, no-unused-vars */
 import { Document } from 'mongoose';
 
-interface IReviewRequestModel extends Document {
+export enum EReviewRequestOrigin {
+    GITLAB = 'gitlab',
+    AZURE = 'azure',
+}
+
+export interface IReviewRequestModel extends Document {
     rawReviewRequest: string;
     rawSlackMessage: string;
-    origin: 'gitlab' | 'azure';
+    origin: EReviewRequestOrigin;
+    repository: string;
     id: string;
-    iid: string;
+    gitlab?: IReviewRequestGitlab;
+    azure?: IReviewRequestAzure;
     url: string;
     created: IReviewRequestModelActionLog;
     added: IReviewRequestModelActionLog;
@@ -17,13 +24,18 @@ interface IReviewRequestModel extends Document {
     done?: boolean;
 }
 
-export interface IMergeRequestModel extends IReviewRequestModel {
-    repository: string;
+export interface IReviewRequestGitlab {
+    iid: string;
 }
 
-export interface IChannelMergeRequests {
+export interface IReviewRequestAzure {
+    organization: string;
+    project: string;
+}
+
+export interface IChannelReviewRequests {
     _id: string;
-    mrs?: IMergeRequestModel[];
+    mrs?: IReviewRequestModel[];
 }
 
 export interface IReviewRequestModelActionLog {

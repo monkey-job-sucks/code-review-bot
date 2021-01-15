@@ -22,6 +22,15 @@ const slackSchema = new Schema({
     'channel': slackChannelSchema,
 }, { '_id': false });
 
+const gitlabSchema = new Schema({
+    'iid': String,
+}, { '_id': false });
+
+const azureSchema = new Schema({
+    'organization': String,
+    'project': String,
+}, { '_id': false });
+
 // TODO:
 // colocar mergedat e closeat na mesma data e tratar por status
 // trocar os campos raw por um "any", Mixed não funcionou :(
@@ -32,7 +41,8 @@ const schema = new Schema({
     'origin': String,
     'repository': String,
     'id': String,
-    'iid': String,
+    'gitlab': gitlabSchema,
+    'azure': azureSchema,
     'created': actionLogSchema,
     'added': actionLogSchema,
     'merged': actionLogSchema,
