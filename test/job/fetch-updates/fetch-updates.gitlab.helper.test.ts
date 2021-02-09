@@ -1,6 +1,6 @@
 import settings from '../../__mocks__/settings';
 
-import helper from '../../../src/job/fetch-updates/fetch-updates.helper';
+import helper from '../../../src/job/fetch-updates/fetch-updates.gitlab.helper';
 
 import { IReviewRequestModel } from '../../../src/api/mongo';
 import { IGitlabMergeRequestDetail, IGitlabMergeRequestReaction, IGitlabUser, IGitlabMergeRequestDiscussion } from '../../../src/api/gitlab';
