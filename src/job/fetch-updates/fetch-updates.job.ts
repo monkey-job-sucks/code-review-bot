@@ -41,7 +41,8 @@ const fetchReview = (review: IReviewRequestModel) => {
         case EReviewRequestOrigin.AZURE:
             return azure.getPullRequestDetail(review.url);
         default:
-            return null;
+            // eslint-disable-next-line no-underscore-dangle
+            throw new Error(`Review ${review._id} has invalid origin!`);
     }
 };
 
