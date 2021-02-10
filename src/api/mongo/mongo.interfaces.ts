@@ -35,7 +35,7 @@ export interface IReviewRequestAzure {
 
 export interface IChannelReviewRequests {
     _id: string;
-    mrs?: IReviewRequestModel[];
+    reviews?: IReviewRequestModel[];
 }
 
 export interface IReviewRequestModelActionLog {

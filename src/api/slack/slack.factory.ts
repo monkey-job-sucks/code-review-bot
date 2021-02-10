@@ -2,8 +2,7 @@ import * as moment from 'moment';
 /* eslint-disable no-unused-vars */
 import { MessageAttachment } from '@slack/web-api';
 
-import { IGitlabMergeRequest } from '../gitlab';
-import { IChannelReviewRequests } from '../mongo';
+import { IChannelReviewRequests, EReviewRequestOrigin } from '../mongo';
 import { IRanking } from '../../job/rankings/rankings.interface';
 /* eslint-enable no-unused-vars */
 
@@ -28,12 +27,21 @@ const generateAddedReviewRequestMessage = (
 const generateDelayedReviewRequestsMessage = (delayedRequests: IChannelReviewRequests): string => {
     const messages: string[] = [];
 
-    messages.push('<!here>, ainda temos MRs abertos:');
+    messages.push('<!here>, ainda temos os seguintes reviews abertos:');
 
-    delayedRequests.mrs.forEach((mr) => {
-        const openedSince = moment(mr.added.at).fromNow();
+    delayedRequests.reviews.forEach((review) => {
+        const openedSince = moment(review.added.at).fromNow();
 
-        messages.push(`<${mr.url}|#${mr.gitlab.iid} ${mr.repository}> adicionado ${openedSince}`);
+        switch (review.origin) {
+            case EReviewRequestOrigin.GITLAB:
+                messages.push(`<${review.url}|#${review.gitlab.iid} ${review.repository}> adicionado ${openedSince}`);
+                break;
+            case EReviewRequestOrigin.AZURE:
+                messages.push(`<${review.url}|#${review.id} ${review.repository}> adicionado ${openedSince}`);
+                break;
+            default:
+                break;
+        }
     });
 
     return messages.join('\r');
