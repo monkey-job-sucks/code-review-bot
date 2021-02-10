@@ -15,7 +15,7 @@ import slackFactory from '../../api/slack/slack.factory';
 
 const JOB_NAME = 'rankings';
 
-const fetchElegibleMRs = async (
+const fetchElegibleReviews = async (
     amount: number,
     unit: string,
     period: string,
@@ -31,13 +31,15 @@ const fetchElegibleMRs = async (
 
 const notifyRanking = async () => {
     try {
-        const elegibleMRsGroupedByAnalytics = await fetchElegibleMRs(1, 'week', 'da última semana');
+        const elegibleReviewsGroupedByAnalytics = await fetchElegibleReviews(1, 'week', 'da última semana');
 
-        return Promise.all(elegibleMRsGroupedByAnalytics.map((mr) => {
-            const message = slackFactory.generateRankingMessage(mr);
+        const slackMessages = elegibleReviewsGroupedByAnalytics.map((review) => {
+            const message = slackFactory.generateRankingMessage(review);
 
-            return slack.sendMessage({ 'channel': mr.channel } as BotkitMessage, message);
-        }));
+            return slack.sendMessage({ 'channel': review.channel } as BotkitMessage, message);
+        });
+
+        return Promise.all(slackMessages);
     } catch (err) {
         Sentry.capture(err, {
             'level': Sentry.level.Error,
