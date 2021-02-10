@@ -1,26 +1,55 @@
-import helper from './fetch-updates.helper';
+// eslint-disable-next-line no-unused-vars
+import { PromiseQueue, PromiseQueueItemResponse } from 'promise-queue-manager';
+
+import gitlabHelper from './fetch-updates.gitlab.helper';
+import azureHelper from './fetch-updates.azure.helper';
 import logger from '../../helpers/Logger';
 import Sentry from '../../helpers/Sentry';
 import { service as slack } from '../../api/slack';
 import jobManager from '../job-manager';
 
 /* eslint-disable no-unused-vars */
+import {
+    ReviewRequest,
+    ISettingsModel,
+    IReviewRequestModel,
+    EReviewRequestOrigin,
+} from '../../api/mongo';
+import {
+    IRemoteInfo,
+    IReactions,
+    IUpvoteReactions,
+    IFinishedReaction,
+    IDiscussionReaction,
+} from './fetch-updates.interface';
 import { IJobConfig } from '../job.interface';
-import { IRemoteInfo, IReactions } from './fetch-updates.interface';
-import { ReviewRequest, IReviewRequestModel, ISettingsModel } from '../../api/mongo';
 import { service as gitlab, IGitlabMergeRequestDetail } from '../../api/gitlab';
+import { service as azure, IAzurePullRequestDetail } from '../../api/azure';
 /* eslint-enable no-unused-vars */
+
+const CONCURRENCE = 10;
+const SHOULD_STOP_ON_ERROR = false;
 
 const JOB_NAME = 'fetch-updates';
 
-const fetchOpenMRs = () => ReviewRequest.find({ 'done': false });
+const fetchOpenReviews = () => ReviewRequest.find({ 'done': false });
 
-const fetchSingleMR = (mr: IReviewRequestModel) => gitlab.getMergeRequestDetail(mr.url);
+const fetchReview = (review: IReviewRequestModel) => {
+    switch (review.origin) {
+        case EReviewRequestOrigin.GITLAB:
+            return gitlab.getMergeRequestDetail(review.url);
+        case EReviewRequestOrigin.AZURE:
+            return azure.getPullRequestDetail(review.url);
+        default:
+            // eslint-disable-next-line no-underscore-dangle
+            throw new Error(`Review ${review._id} has invalid origin!`);
+    }
+};
 
 const getRemoteInfo = async (
     settings: ISettingsModel,
-    currentMR: IReviewRequestModel,
-    remoteMR: IGitlabMergeRequestDetail,
+    currentReview: IReviewRequestModel,
+    remoteReview: IGitlabMergeRequestDetail | IAzurePullRequestDetail,
 ): Promise<IRemoteInfo> => {
     const remoteInfo: IRemoteInfo = {
         'reactions': {
@@ -29,17 +58,57 @@ const getRemoteInfo = async (
         },
     };
 
-    const [remoteReactions, remoteDiscussions] = await Promise.all([
-        gitlab.getMergeRequestReactions(currentMR.url),
-        gitlab.getMergeRequestDiscussions(currentMR.url),
-    ]);
+    let upvoted: IUpvoteReactions;
+    let finished: IFinishedReaction;
+    let reviewed: IDiscussionReaction;
 
-    const upvoted = helper.getUpvoteReactions(currentMR, remoteReactions);
-    const finished = helper.getFinishedReaction(settings, remoteMR);
-    const reviewed = helper.getDiscussionReaction(settings, currentMR, remoteDiscussions);
+    /* eslint-disable no-case-declarations */
+    switch (currentReview.origin) {
+        case EReviewRequestOrigin.GITLAB:
+            const remoteMR = remoteReview as IGitlabMergeRequestDetail;
 
-    remoteInfo.reactions.add = upvoted.reactions.add.concat(reviewed.reactions.add);
-    remoteInfo.reactions.remove = upvoted.reactions.remove.concat(reviewed.reactions.remove);
+            const [gitlabReactions, gitlabDiscussions] = await Promise.all([
+                gitlab.getMergeRequestReactions(currentReview.url),
+                gitlab.getMergeRequestDiscussions(currentReview.url),
+            ]);
+
+            upvoted = gitlabHelper.getUpvoteReactions(currentReview, gitlabReactions);
+            finished = gitlabHelper.getFinishedReaction(settings, remoteMR);
+            reviewed = gitlabHelper.getDiscussionReaction(
+                settings,
+                currentReview,
+                gitlabDiscussions,
+            );
+
+            break;
+        case EReviewRequestOrigin.AZURE:
+            const remotePR = remoteReview as IAzurePullRequestDetail;
+
+            const [azureReactions, azureDiscussions] = await Promise.all([
+                azure.getPullRequestReviewers(currentReview.url),
+                azure.getPullRequestThreads(currentReview.url),
+            ]);
+
+            upvoted = azureHelper.getUpvoteReactions(currentReview, azureReactions);
+            finished = azureHelper.getFinishedReaction(settings, remotePR);
+            reviewed = azureHelper.getDiscussionReaction(
+                settings,
+                currentReview,
+                azureDiscussions,
+            );
+
+            break;
+        default:
+            break;
+    }
+    /* eslint-enable no-case-declarations */
+
+    remoteInfo.reactions.add = upvoted.reactions.add.concat(
+        reviewed.reactions.add,
+    );
+    remoteInfo.reactions.remove = upvoted.reactions.remove.concat(
+        reviewed.reactions.remove,
+    );
 
     if (upvoted.upvoters) remoteInfo.upvoters = upvoted.upvoters;
     if (reviewed.reviewers) remoteInfo.reviewers = reviewed.reviewers;
@@ -55,48 +124,44 @@ const updateReactions = (
     currentReactions: string[],
     newReactions: IReactions,
 ): string[] => currentReactions.reduce((nextReactions: string[], reaction: string) => {
-    if (newReactions.remove.includes(reaction)) return nextReactions;
-
-    nextReactions.push(reaction);
+    if (!newReactions.remove.includes(reaction)) nextReactions.push(reaction);
 
     return nextReactions;
 }, []).concat(newReactions.add);
 
-const updateMR = async (
-    settings: ISettingsModel,
-    currentMR: IReviewRequestModel,
-    remoteMR: IGitlabMergeRequestDetail,
+const updateOpenReview = async (
+    currentReview: IReviewRequestModel,
+    remoteInfo: IRemoteInfo,
 ) => {
     try {
-        const {
-            merged,
-            closed,
-            upvoters,
-            reviewers,
-            reactions,
-        } = await getRemoteInfo(settings, currentMR, remoteMR);
-
         await slack.removeReaction(
-            JSON.parse(currentMR.rawSlackMessage), currentMR.slack.messageId, reactions.remove,
+            JSON.parse(currentReview.rawSlackMessage),
+            currentReview.slack.messageId,
+            remoteInfo.reactions.remove,
         );
 
         await slack.addReaction(
-            JSON.parse(currentMR.rawSlackMessage), currentMR.slack.messageId, reactions.add,
+            JSON.parse(currentReview.rawSlackMessage),
+            currentReview.slack.messageId,
+            remoteInfo.reactions.add,
         );
 
         // update mongo document with new info
         /* eslint-disable no-param-reassign */
-        currentMR.slack.reactions = updateReactions(currentMR.slack.reactions, reactions);
+        currentReview.slack.reactions = updateReactions(
+            currentReview.slack.reactions,
+            remoteInfo.reactions,
+        );
 
-        currentMR.done = !!merged || !!closed;
+        currentReview.done = !!remoteInfo.merged || !!remoteInfo.closed;
 
-        if (merged) currentMR.merged = merged;
-        if (closed) currentMR.closed = closed;
-        if (upvoters) currentMR.analytics.upvoters = upvoters;
-        if (reviewers) currentMR.analytics.reviewers = reviewers;
+        if (remoteInfo.merged) currentReview.merged = remoteInfo.merged;
+        if (remoteInfo.closed) currentReview.closed = remoteInfo.closed;
+        if (remoteInfo.upvoters) currentReview.analytics.upvoters = remoteInfo.upvoters;
+        if (remoteInfo.reviewers) currentReview.analytics.reviewers = remoteInfo.reviewers;
         /* eslint-enable no-param-reassign */
 
-        return currentMR.save();
+        return currentReview.save();
     } catch (err) {
         Sentry.capture(err, {
             'level': Sentry.level.Error,
@@ -106,31 +171,60 @@ const updateMR = async (
             'context': {
                 'name': 'updateMR',
                 'data': {
-                    'currentMR': JSON.stringify(currentMR),
-                    'remoteMR': JSON.stringify(remoteMR),
+                    'currentMR': JSON.stringify(currentReview),
+                    'remoteInfo': JSON.stringify(remoteInfo),
                 },
             },
         });
 
-        logger.info(currentMR);
+        logger.info(currentReview);
 
         return logger.error(err.stack || err);
     }
 };
 
-const updateOpenMRs = async (settings: ISettingsModel): Promise<number> => {
+const updateReview = async (
+    settings: ISettingsModel,
+    openReview: IReviewRequestModel,
+): Promise<void> => {
+    const remoteReview = await fetchReview(openReview);
+
+    const remoteInfo: IRemoteInfo = await getRemoteInfo(settings, openReview, remoteReview.detail);
+
+    await updateOpenReview(openReview, remoteInfo);
+};
+
+const updateOpenReviews = async (settings: ISettingsModel, finish: Function): Promise<void> => {
     try {
-        const openMRs: IReviewRequestModel[] = await fetchOpenMRs();
+        const openReviews: IReviewRequestModel[] = await fetchOpenReviews();
 
-        if (openMRs.length === 0) return 0;
+        if (openReviews.length === 0) return finish(0);
 
-        const currentMRStatus = await Promise.all(openMRs.map(fetchSingleMR));
+        const updateReviews = openReviews.map((openReview) => updateReview(settings, openReview));
 
-        await Promise.all(
-            openMRs.map((openMR, i) => updateMR(settings, openMR, currentMRStatus[i].detail)),
-        );
+        const queue = new PromiseQueue<void>({
+            'promises': updateReviews,
+        }, CONCURRENCE, SHOULD_STOP_ON_ERROR);
 
-        return openMRs.length;
+        queue.on(PromiseQueue.EVENTS.ITEM_ERROR, (res: PromiseQueueItemResponse<void>) => {
+            logger.error(`[${JOB_NAME}] ITEM_ERROR: ${JSON.stringify(res)}`);
+        });
+
+        queue.on(PromiseQueue.EVENTS.ITEM_PROCESSING, (res: PromiseQueueItemResponse<void>) => {
+            logger.info(`[${JOB_NAME}] ITEM_PROCESSING: ${JSON.stringify(res)}`);
+        });
+
+        queue.on(PromiseQueue.EVENTS.ITEM_PROCESSED, (res: PromiseQueueItemResponse<void>) => {
+            logger.info(`[${JOB_NAME}] ITEM_PROCESSED: ${JSON.stringify(res)}`);
+        });
+
+        queue.on(PromiseQueue.EVENTS.QUEUE_PROCESSED, () => {
+            logger.info(`[${JOB_NAME}] QUEUE_PROCESSED`);
+
+            return finish(openReviews.length);
+        });
+
+        return queue.start();
     } catch (err) {
         Sentry.capture(err, {
             'level': Sentry.level.Error,
@@ -138,28 +232,29 @@ const updateOpenMRs = async (settings: ISettingsModel): Promise<number> => {
                 'fileName': 'fetch-updates.job',
             },
             'context': {
-                'name': 'updateOpenMRs',
+                'name': 'updateOpenReviews',
                 'data': {},
             },
         });
 
         logger.error(err.stack || err);
 
-        return 0;
+        return finish(NaN);
     }
 };
 
 const fetchMRUpdatesJob: IJobConfig = {
-    'function': (settings: ISettingsModel) => async function fetchMRUpdates() {
+    'function': (settings: ISettingsModel) => async function fetchReviewsUpdates() {
         if (jobManager.isRunning(JOB_NAME)) return false;
 
         jobManager.start(JOB_NAME);
 
-        const openMRsAmount = await updateOpenMRs(settings);
+        const onFinish = (openReviewsAmount: number) => {
+            jobManager.log(JOB_NAME, `Updated ${openReviewsAmount} reviews`);
+            jobManager.stop(JOB_NAME);
+        };
 
-        jobManager.log(JOB_NAME, `Got ${openMRsAmount} mrs`);
-
-        jobManager.stop(JOB_NAME);
+        await updateOpenReviews(settings, onFinish);
 
         return true;
     },

@@ -20,7 +20,7 @@ export interface IAzurePullRequestDetailRepository {
     webUrl: string;
 }
 
-export interface IAzurePullRequestDetailCreatedBy {
+export interface IAzurePullRequestDetailAuthor {
     displayName: string;
     url: string;
     _links: IAzureThreadAvatar;
@@ -68,7 +68,8 @@ export interface IAzurePullRequestDetail {
     pullRequestId: number;
     codeReviewId: number;
     status: string;
-    createdBy: IAzurePullRequestDetailCreatedBy;
+    createdBy: IAzurePullRequestDetailAuthor;
+    closedBy?: IAzurePullRequestDetailAuthor;
     creationDate: Date;
     closedDate: Date;
     title: string;
