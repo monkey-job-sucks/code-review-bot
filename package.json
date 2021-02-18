@@ -9,7 +9,7 @@
     "lint": "eslint src/** --ext .ts",
     "build": "tsc",
     "dev": "ts-node src/app.ts",
-    "local": "docker-compose -f docker-compose-local.yml up"
+    "local": "docker-compose -f docker-compose-local.yml up --build"
   },
   "repository": {
     "type": "git",
@@ -58,7 +58,7 @@
     "lodash": "4.17.15",
     "moment": "2.24.0",
     "mongoose": "5.7.1",
-    "promise-queue-manager": "1.0.1",
+    "promise-queue-manager": "1.0.3",
     "uuid": "8.3.2"
   }
 }
