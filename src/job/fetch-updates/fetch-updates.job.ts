@@ -211,15 +211,15 @@ const updateOpenReviews = async (settings: ISettingsModel, finish: Function): Pr
         });
 
         queue.on(PromiseQueue.EVENTS.ITEM_PROCESSING, (res: PromiseQueueItemResponse<void>) => {
-            logger.info(`[${JOB_NAME}] ITEM_PROCESSING: ${JSON.stringify(res)}`);
+            logger.debug(`[${JOB_NAME}] ITEM_PROCESSING: ${JSON.stringify(res)}`);
         });
 
         queue.on(PromiseQueue.EVENTS.ITEM_PROCESSED, (res: PromiseQueueItemResponse<void>) => {
-            logger.info(`[${JOB_NAME}] ITEM_PROCESSED: ${JSON.stringify(res)}`);
+            logger.debug(`[${JOB_NAME}] ITEM_PROCESSED: ${JSON.stringify(res)}`);
         });
 
         queue.on(PromiseQueue.EVENTS.QUEUE_PROCESSED, () => {
-            logger.info(`[${JOB_NAME}] QUEUE_PROCESSED`);
+            logger.debug(`[${JOB_NAME}] QUEUE_PROCESSED`);
 
             return finish(openReviews.length);
         });
