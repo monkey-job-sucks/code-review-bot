@@ -3,10 +3,10 @@ import * as mongoose from 'mongoose';
 /* eslint-disable no-unused-vars */
 import {
     ISettingsModel,
-    IMergeRequestModel,
+    IReviewRequestModel,
 } from './mongo.interfaces';
 /* eslint-enable no-unused-vars */
-import mergeRequestSchema from './schemas/merge-request.schema';
+import reviewRequestSchema from './schemas/review-request.schema';
 import settingsSchema from './schemas/settings.schema';
 import logger from '../../helpers/Logger';
 
@@ -27,11 +27,11 @@ mongoose.connect(process.env.MONGO_URI, {
 
 mongoose.connection.on('error', handleMongoError);
 
-const mergeRequestCollectionName = buildCollectionName('MergeRequest');
-export const MergeRequest = mongoose.model<IMergeRequestModel>(
-    mergeRequestCollectionName,
-    mergeRequestSchema,
-    mergeRequestCollectionName,
+const reviewRequestCollectionName = buildCollectionName('ReviewRequest');
+export const ReviewRequest = mongoose.model<IReviewRequestModel>(
+    reviewRequestCollectionName,
+    reviewRequestSchema,
+    reviewRequestCollectionName,
 );
 
 const settingsCollectionName = buildCollectionName('Settings');

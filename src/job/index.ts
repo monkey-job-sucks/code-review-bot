@@ -5,7 +5,7 @@ import { CronJob, CronCommand } from 'cron';
 import { ISettingsModel } from '../api/mongo';
 /* eslint-enable no-unused-vars */
 import rankingJob from './rankings/rankings.job';
-import notifyOpenMRs from './notify-open-mrs/notify-open-mrs.job';
+import notifyOpenMRs from './notify-open-reviews/notify-open-reviews.job';
 import fetchMRUpdatesJob from './fetch-updates/fetch-updates.job';
 
 interface IJobs {

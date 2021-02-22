@@ -18,6 +18,8 @@ export enum EGitlabMergeRequestStatus {
 }
 
 export interface IGitlabMergeRequest {
+    info: IGitlabMergeRequestUrlInfo;
+    url: string;
     repository: string;
     detail: IGitlabMergeRequestDetail;
 }

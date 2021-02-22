@@ -2,8 +2,7 @@ import * as moment from 'moment';
 /* eslint-disable no-unused-vars */
 import { MessageAttachment } from '@slack/web-api';
 
-import { IGitlabMergeRequest } from '../gitlab';
-import { IChannelMergeRequests } from '../mongo';
+import { IChannelReviewRequests, EReviewRequestOrigin } from '../mongo';
 import { IRanking } from '../../job/rankings/rankings.interface';
 /* eslint-enable no-unused-vars */
 
@@ -11,29 +10,38 @@ moment.locale('pt-br');
 
 const rankingEmojis = [':first_place_medal:', ':second_place_medal:', ':third_place_medal:'];
 
-const generateAddedMergeRequestMessage = (
-    user: string,
-    mr: IGitlabMergeRequest,
+const generateAddedReviewRequestMessage = (
+    slackUser: string,
+    id: number,
+    repository: string,
+    url: string,
 ): MessageAttachment => {
-    const { repository, detail } = mr;
-
-    const title = `<@${user}> adicionou o MR #${detail.iid} ${repository}`;
+    const title = `<@${slackUser}> adicionou #${id} ${repository}`;
 
     return {
         'title': title,
-        'title_link': detail.web_url,
+        'title_link': url,
     };
 };
 
-const generateDelayedMergeRequestsMessage = (delayedMrs: IChannelMergeRequests): string => {
+const generateDelayedReviewRequestsMessage = (delayedRequests: IChannelReviewRequests): string => {
     const messages: string[] = [];
 
-    messages.push('<!here>, ainda temos MRs abertos:');
+    messages.push('<!here>, ainda temos os seguintes reviews abertos:');
 
-    delayedMrs.mrs.forEach((mr) => {
-        const openedSince = moment(mr.added.at).fromNow();
+    delayedRequests.reviews.forEach((review) => {
+        const openedSince = moment(review.added.at).fromNow();
 
-        messages.push(`<${mr.url}|#${mr.iid} ${mr.repository}> adicionado ${openedSince}`);
+        switch (review.origin) {
+            case EReviewRequestOrigin.GITLAB:
+                messages.push(`<${review.url}|#${review.gitlab.iid} ${review.repository}> adicionado ${openedSince}`);
+                break;
+            case EReviewRequestOrigin.AZURE:
+                messages.push(`<${review.url}|#${review.id} ${review.repository}> adicionado ${openedSince}`);
+                break;
+            default:
+                break;
+        }
     });
 
     return messages.join('\r');
@@ -43,7 +51,7 @@ const generateRankingMessage = (ranking: IRanking): string => {
     const messages: string[] = [];
 
     if (ranking.upvoters.length > 0 || ranking.reviewers.length > 0) {
-        messages.push(`<!here>, esse é o ranking ${ranking.period}:`);
+        messages.push(`<!here>, esse é o ranking de reviews aceitos ${ranking.period}:`);
 
         if (ranking.upvoters.length > 0) {
             messages.push('Quem mais deu likes');
@@ -57,7 +65,7 @@ const generateRankingMessage = (ranking: IRanking): string => {
         if (ranking.upvoters.length > 0 && ranking.reviewers.length > 0) messages.push('');
 
         if (ranking.reviewers.length > 0) {
-            messages.push('Quem mais iniciou discussions');
+            messages.push('Quem mais iniciou threads');
 
             ranking.reviewers.slice(0, rankingEmojis.length).forEach((user, i) => {
                 messages.push(`${rankingEmojis[i]} (${user.total}) ${user.username}`);
@@ -70,6 +78,6 @@ const generateRankingMessage = (ranking: IRanking): string => {
 
 export default {
     generateRankingMessage,
-    generateAddedMergeRequestMessage,
-    generateDelayedMergeRequestsMessage,
+    generateAddedReviewRequestMessage,
+    generateDelayedReviewRequestsMessage,
 };

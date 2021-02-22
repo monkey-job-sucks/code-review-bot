@@ -1,38 +1,54 @@
-// eslint-disable-next-line no-unused-vars
+/* eslint-disable import/prefer-default-export, no-unused-vars */
 import { Document } from 'mongoose';
 
-export interface IMergeRequestModel extends Document {
-    rawMergeRequest: string;
+export enum EReviewRequestOrigin {
+    GITLAB = 'gitlab',
+    AZURE = 'azure',
+}
+
+export interface IReviewRequestModel extends Document {
+    rawReviewRequest: string;
     rawSlackMessage: string;
-    url: string;
+    origin: EReviewRequestOrigin;
     repository: string;
     id: string;
-    iid: string;
-    created: IMergeRequestModelActionLog;
-    added: IMergeRequestModelActionLog;
-    merged?: IMergeRequestModelActionLog;
-    closed?: IMergeRequestModelActionLog;
-    slack: IMergeRequestModelSlack;
+    gitlab?: IReviewRequestGitlab;
+    azure?: IReviewRequestAzure;
+    url: string;
+    created: IReviewRequestModelActionLog;
+    added: IReviewRequestModelActionLog;
+    merged?: IReviewRequestModelActionLog;
+    closed?: IReviewRequestModelActionLog;
+    slack: IReviewRequestModelSlack;
+    analytics?: IReviewRequestModelAnalytics;
     done?: boolean;
-    analytics?: IMergeRequestModelAnalytics;
 }
 
-export interface IChannelMergeRequests {
+export interface IReviewRequestGitlab {
+    iid: string;
+}
+
+export interface IReviewRequestAzure {
+    organization: string;
+    project: string;
+}
+
+export interface IChannelReviewRequests {
     _id: string;
-    mrs?: IMergeRequestModel[];
+    reviews?: IReviewRequestModel[];
 }
 
-export interface IMergeRequestModelActionLog {
+export interface IReviewRequestModelActionLog {
     at: Date;
     by: string;
 }
 
-interface IMergeRequestModelAnalytics {
+interface IReviewRequestModelAnalytics {
     upvoters: string[];
     reviewers: string[];
 }
 
-interface IMergeRequestModelSlack {
+interface IReviewRequestModelSlack {
     messageId: string;
     reactions?: string[];
     channel: IMergeRequestModelSlackChannel;
@@ -87,8 +103,15 @@ interface ISettingsModelCron {
     fetchRequestsUpdates: ISettingsModelCronBase,
 }
 
+interface ISettingsAzure {
+    host: string;
+    apiVersion: string;
+    personalToken: string;
+}
+
 export interface ISettingsModel extends Document {
     cron: ISettingsModelCron,
-    gitlab: ISettingsGitlab,
+    gitlab?: ISettingsGitlab,
+    azure?: ISettingsAzure,
     slack: ISettingsSlack,
 }
