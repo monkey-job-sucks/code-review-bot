@@ -51,7 +51,7 @@ const generateRankingMessage = (ranking: IRanking): string => {
     const messages: string[] = [];
 
     if (ranking.upvoters.length > 0 || ranking.reviewers.length > 0) {
-        messages.push(`<!here>, esse é o ranking ${ranking.period}:`);
+        messages.push(`<!here>, esse é o ranking de reviews aceitos ${ranking.period}:`);
 
         if (ranking.upvoters.length > 0) {
             messages.push('Quem mais deu likes');
@@ -65,7 +65,7 @@ const generateRankingMessage = (ranking: IRanking): string => {
         if (ranking.upvoters.length > 0 && ranking.reviewers.length > 0) messages.push('');
 
         if (ranking.reviewers.length > 0) {
-            messages.push('Quem mais iniciou discussions');
+            messages.push('Quem mais iniciou threads');
 
             ranking.reviewers.slice(0, rankingEmojis.length).forEach((user, i) => {
                 messages.push(`${rankingEmojis[i]} (${user.total}) ${user.username}`);
