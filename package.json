@@ -1,6 +1,6 @@
 {
   "name": "code-review-bot",
-  "version": "0.0.1",
+  "version": "3.0.0",
   "description": "Bot para controle de fila de code review",
   "main": "dist/app.js",
   "scripts": {
