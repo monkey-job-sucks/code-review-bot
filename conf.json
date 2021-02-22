@@ -1,0 +1,41 @@
+{
+    "timezone": "",
+    "slack": {
+        "secret": "",
+        "token": "",
+        "verificationToken": "",
+        "webhookPath": "",
+        "MRAddedMessageColor": "",
+        "allowedChannels": [""],
+        "log": {
+            "channelId": "",
+            "maxTextMessageSize": 1
+        }
+    },
+    "cron": {
+        "ranking": {
+            "pattern": ""
+        },
+        "openMRs": {
+            "pattern": "",
+            "delayedInHours": 2
+        },
+        "fetchMRUpdates": {
+            "pattern": "",
+            "reaction": {
+                "discussion": "",
+                "merged": "",
+                "closed": ""
+            }
+        }
+    },
+    "gitlab": [{
+        "host": "",
+        "apiVersion": "",
+        "personalToken": ""
+    }],
+    "mongo": {
+        "uri": "",
+        "collectionPrefix": ""
+    }
+}
