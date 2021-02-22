@@ -28,6 +28,11 @@ const schema = new Schema({
         'apiVersion': String,
         'personalToken': String,
     },
+    'azure': {
+        'host': String,
+        'apiVersion': String,
+        'personalToken': String,
+    },
     'slack': {
         'secret': String,
         'token': String,

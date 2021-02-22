@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import { IMergeRequestModelActionLog } from '../../api/mongo';
+import { IReviewRequestModelActionLog } from '../../api/mongo';
 
 export interface IReactions {
     add: string[];
@@ -15,8 +15,8 @@ export interface IUpvote {
 }
 
 export interface IFinished {
-    merged?: IMergeRequestModelActionLog;
-    closed?: IMergeRequestModelActionLog;
+    merged?: IReviewRequestModelActionLog;
+    closed?: IReviewRequestModelActionLog;
 }
 
 export interface IRemoteInfo extends IFinished, IUpvote, IDiscussion {

@@ -2,13 +2,13 @@ import * as _ from 'lodash';
 
 /* eslint-disable no-unused-vars */
 import { IFinishedReaction, IUpvoteReactions, IDiscussionReaction } from './fetch-updates.interface';
-import { IMergeRequestModel, ISettingsModel } from '../../api/mongo';
+import { IReviewRequestModel, ISettingsModel } from '../../api/mongo';
 import { IGitlabMergeRequestDetail, IGitlabMergeRequestReaction, IGitlabMergeRequestDiscussion } from '../../api/gitlab';
 /* eslint-enable no-unused-vars */
 import slackHelper from '../../api/slack/slack.helper';
 
 const getUpvoteReactions = (
-    currentMR: IMergeRequestModel,
+    currentMR: IReviewRequestModel,
     remoteReactions: IGitlabMergeRequestReaction[],
 ): IUpvoteReactions => {
     const upvote: IUpvoteReactions = {
@@ -52,7 +52,7 @@ const getUpvoteReactions = (
 
 const getDiscussionReaction = (
     settings: ISettingsModel,
-    currentMR: IMergeRequestModel,
+    currentMR: IReviewRequestModel,
     remoteDiscussions: IGitlabMergeRequestDiscussion[],
 ): IDiscussionReaction => {
     const discussion: IDiscussionReaction = {
