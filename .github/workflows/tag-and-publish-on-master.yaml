@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'src/**'
+      - 'package*.json'
+      - 'Dockerfile'
 
 jobs:
   tag:
