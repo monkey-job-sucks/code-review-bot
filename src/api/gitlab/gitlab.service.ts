@@ -2,7 +2,6 @@
 import axios, { AxiosInstance } from 'axios';
 
 import helper from './gitlab.helper';
-import Sentry from '../../helpers/Sentry';
 import {
     IGitlabMergeRequest,
     EGitlabMergeRequestResource,
@@ -58,32 +57,9 @@ class Gitlab {
                 throw new Message('Não consegui identificar o mr nesse link :disappointed:');
             }
         } catch (err) {
-            const captureOptions = {
-                'tags': {
-                    'fileName': 'gitlab.service',
-                },
-                'context': {
-                    'name': 'getMergeRequestDetail',
-                    'data': {
-                        'method': 'getUrlInfo',
-                        'url': url,
-                    },
-                },
-            };
-
             if (err instanceof Message) {
-                Sentry.capture(err, {
-                    'level': Sentry.level.Warning,
-                    ...captureOptions,
-                });
-
                 throw err;
             }
-
-            Sentry.capture(err, {
-                'level': Sentry.level.Error,
-                ...captureOptions,
-            });
 
             throw new Message('Tive um problema para identificar o mr nesse link :disappointed:');
         }
@@ -103,34 +79,9 @@ class Gitlab {
                 'detail': response.data,
             };
         } catch (err) {
-            const captureOptions = {
-                'tags': {
-                    'fileName': 'gitlab.service',
-                },
-                'context': {
-                    'name': 'getMergeRequestDetail',
-                    'data': {
-                        'url': url,
-                        'method': 'this.api',
-                        'encodedRepository': encodedRepository,
-                        'info': JSON.stringify(info),
-                    },
-                },
-            };
-
             if (err.response && err.response.status === 404) {
-                Sentry.capture(err, {
-                    'level': Sentry.level.Warning,
-                    ...captureOptions,
-                });
-
                 throw new Message('Não encontrei esse mr, o link está certo? :thinking_face:');
             }
-
-            Sentry.capture(err, {
-                'level': Sentry.level.Error,
-                ...captureOptions,
-            });
 
             throw new Message('Tive um problema pra buscar os detalhes desse mr :disappointed:');
         }

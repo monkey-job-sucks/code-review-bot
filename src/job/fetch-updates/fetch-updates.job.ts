@@ -4,7 +4,6 @@ import { PromiseQueue, PromiseQueueItemResponse } from 'promise-queue-manager';
 import gitlabHelper from './fetch-updates.gitlab.helper';
 import azureHelper from './fetch-updates.azure.helper';
 import logger from '../../helpers/Logger';
-import Sentry from '../../helpers/Sentry';
 import { service as slack } from '../../api/slack';
 import jobManager from '../job-manager';
 
@@ -163,20 +162,6 @@ const updateOpenReview = async (
 
         return currentReview.save();
     } catch (err) {
-        Sentry.capture(err, {
-            'level': Sentry.level.Error,
-            'tags': {
-                'fileName': 'fetch-updates.job',
-            },
-            'context': {
-                'name': 'updateMR',
-                'data': {
-                    'currentMR': JSON.stringify(currentReview),
-                    'remoteInfo': JSON.stringify(remoteInfo),
-                },
-            },
-        });
-
         logger.info(currentReview);
 
         return logger.error(err.stack || err);
@@ -226,17 +211,6 @@ const updateOpenReviews = async (settings: ISettingsModel, finish: Function): Pr
 
         return queue.start();
     } catch (err) {
-        Sentry.capture(err, {
-            'level': Sentry.level.Error,
-            'tags': {
-                'fileName': 'fetch-updates.job',
-            },
-            'context': {
-                'name': 'updateOpenReviews',
-                'data': {},
-            },
-        });
-
         logger.error(err.stack || err);
 
         return finish(NaN);

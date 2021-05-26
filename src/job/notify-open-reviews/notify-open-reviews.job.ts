@@ -7,7 +7,6 @@ import { service as slack, factory as slackFactory } from '../../api/slack';
 import { IJobConfig } from '../job.interface';
 /* eslint-enable no-unused-vars */
 import logger from '../../helpers/Logger';
-import Sentry from '../../helpers/Sentry';
 import jobManager from '../job-manager';
 
 const JOB_NAME = 'notify-open-reviews';
@@ -49,17 +48,6 @@ const notifyDelayedReviews = async (settings: ISettingsModel): Promise<number> =
 
         return openReviews.length;
     } catch (err) {
-        Sentry.capture(err, {
-            'level': Sentry.level.Error,
-            'tags': {
-                'fileName': 'notify-open-reviews.job',
-            },
-            'context': {
-                'name': 'notifyDelayedReviews',
-                'data': {},
-            },
-        });
-
         logger.error(err.stack || err);
 
         return 0;
