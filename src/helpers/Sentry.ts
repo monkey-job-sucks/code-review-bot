@@ -25,7 +25,7 @@ const init = (url: string) => {
     SentryNode.init({
         'dsn': url,
         'tracesSampleRate': 1.0,
-        'environment': process.env.NODE_ENV || 'production',
+        'environment': process.env.NODE_ENV || 'development',
     });
 };
 

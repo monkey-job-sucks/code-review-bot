@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import axios, { AxiosInstance } from 'axios';
 
-import Sentry from '../../helpers/Sentry';
 import { ISettingsModel } from '../mongo';
 import {
     IAzurePullRequest,
@@ -67,29 +66,9 @@ class Azure {
                 'detail': response.data,
             };
         } catch (err) {
-            const captureOptions = {
-                'tags': {
-                    'fileName': 'azure.service',
-                },
-                'context': {
-                    'name': 'getPullRequestDetail',
-                    'data': {},
-                },
-            };
-
             if (err instanceof Message) {
-                Sentry.capture(err, {
-                    'level': Sentry.level.Warning,
-                    ...captureOptions,
-                });
-
                 throw err;
             }
-
-            Sentry.capture(err, {
-                'level': Sentry.level.Error,
-                ...captureOptions,
-            });
 
             throw new Message('Tive um problema para identificar o pr nesse link :disappointed:');
         }
