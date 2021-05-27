@@ -12,25 +12,27 @@ import jobManager from '../job-manager';
 
 const JOB_NAME = 'notify-open-reviews';
 
-const fetchDelayedReviews = (
-    hours: number,
-    discussionReaction: string,
-): Promise<IReviewRequestModel[]> => {
+const fetchDelayedReviews = (hours: number): Promise<IReviewRequestModel[]> => {
     const cutDate = moment().subtract(hours, 'hours').toDate();
 
     return ReviewRequest.aggregate()
         .match({
             'done': false,
             'added.at': { '$lte': cutDate },
-            'slack.reactions': { '$nin': [discussionReaction] },
         })
         .sort({ 'added.at': 1 })
         .group({ '_id': '$slack.channel.id', 'reviews': { '$push': '$$ROOT' } })
         .exec();
 };
 
-const notifyChannel = (channelReviews: IReviewRequestModel) => {
-    const message = slackFactory.generateDelayedReviewRequestsMessage(channelReviews);
+const notifyChannel = (
+    channelReviews: IReviewRequestModel,
+    discussionReaction: string,
+) => {
+    const message = slackFactory.generateDelayedReviewRequestsMessage(
+        channelReviews,
+        discussionReaction,
+    );
 
     // eslint-disable-next-line no-underscore-dangle
     return slack.sendMessage({ 'channel': channelReviews._id } as BotkitMessage, message);
@@ -40,12 +42,13 @@ const notifyDelayedReviews = async (settings: ISettingsModel): Promise<number> =
     try {
         const openReviews = await fetchDelayedReviews(
             settings.cron.openRequests.hours,
-            settings.slack.reactions.discussion,
         );
 
         if (openReviews.length === 0) return 0;
 
-        await Promise.all(openReviews.map(notifyChannel));
+        await Promise.all(
+            openReviews.map((review) => notifyChannel(review, settings.slack.reactions.discussion)),
+        );
 
         return openReviews.length;
     } catch (err) {
