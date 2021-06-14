@@ -1,9 +1,9 @@
 import {
     Settings,
-    ISettingsModel,
+    SettingsModel,
 } from './api/mongo';
 
-const DEFAULT_SETTINGS: Partial<ISettingsModel> = {
+const DEFAULT_SETTINGS: Partial<SettingsModel> = {
     'cron': {
         'notifyRanking': {
             'enabled': false,
@@ -49,10 +49,10 @@ const DEFAULT_SETTINGS: Partial<ISettingsModel> = {
     },
 };
 
-const settings: Partial<ISettingsModel> = {};
+const settings: Partial<SettingsModel> = {};
 
 // eslint-disable-next-line import/prefer-default-export
-export const loadSettings = async (): Promise<ISettingsModel> => {
+export const loadSettings = async (): Promise<SettingsModel> => {
     const document = await Settings.findOne();
 
     if (!document) {
@@ -66,7 +66,7 @@ export const loadSettings = async (): Promise<ISettingsModel> => {
     settings.azure = document.azure;
     settings.slack = document.slack;
 
-    return settings as ISettingsModel;
+    return settings as SettingsModel;
 };
 
 Settings.watch().on('change', () => process.exit(0));

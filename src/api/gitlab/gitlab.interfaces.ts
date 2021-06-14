@@ -1,6 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-/* eslint-disable camelcase */
-
 export enum EGitlabMergeRequestResource {
     DETAIL = '',
     COMMITS = 'commits',
@@ -16,19 +13,19 @@ export enum EGitlabMergeRequestStatus {
     MERGED = 'merged',
 }
 
-export interface IGitlabMergeRequest {
-    info: IGitlabMergeRequestUrlInfo;
+export interface GitlabMergeRequest {
+    info: GitlabMergeRequestUrlInfo;
     url: string;
     repository: string;
-    detail: IGitlabMergeRequestDetail;
+    detail: GitlabMergeRequestDetail;
 }
 
-export interface IGitlabMergeRequestChanges {
+export interface GitlabMergeRequestChanges {
     additions: number;
     deletions: number;
 }
 
-export interface IGitlabMergeRequestDetail {
+export interface GitlabMergeRequestDetail {
     id: number;
     iid: number;
     project_id: number;
@@ -37,21 +34,21 @@ export interface IGitlabMergeRequestDetail {
     state: string;
     created_at: string;
     updated_at: string;
-    merged_by?: IGitlabUser;
+    merged_by?: GitlabUser;
     merged_at?: string;
-    closed_by?: IGitlabUser;
+    closed_by?: GitlabUser;
     closed_at?: string;
     target_branch: string;
     source_branch: string;
     upvotes: number;
     downvotes: number;
-    author: IGitlabUser;
-    assignee?: IGitlabUser;
+    author: GitlabUser;
+    assignee?: GitlabUser;
     source_project_id: number;
     target_project_id: number;
     labels: string[];
     work_in_progress: boolean;
-    milestone?: IGitlabMergeRequestDetailMilestone;
+    milestone?: GitlabMergeRequestDetailMilestone;
     merge_when_pipeline_succeeds: boolean;
     merge_status: string;
     sha: string;
@@ -61,20 +58,20 @@ export interface IGitlabMergeRequestDetail {
     should_remove_source_branch?: boolean;
     force_remove_source_branch: boolean;
     web_url: string;
-    time_stats: IGitlabMergeRequestDetailTimeStats;
+    time_stats: GitlabMergeRequestDetailTimeStats;
     squash: boolean;
     subscribed: boolean;
     changes_count: string;
     latest_build_started_at?: any;
     latest_build_finished_at?: any;
     first_deployed_to_production_at?: any;
-    pipeline?: IGitlabMergeRequestDetailPipeline;
-    diff_refs: IGitlabMergeRequestDetailDiffRefs;
+    pipeline?: GitlabMergeRequestDetailPipeline;
+    diff_refs: GitlabMergeRequestDetailDiffRefs;
     merge_error?: string;
     approvals_before_merge?: number;
 }
 
-export interface IGitlabUser {
+export interface GitlabUser {
     id: number;
     name: string;
     username: string;
@@ -83,14 +80,14 @@ export interface IGitlabUser {
     web_url: string;
 }
 
-export interface IGitlabMergeRequestDetailTimeStats {
+export interface GitlabMergeRequestDetailTimeStats {
     time_estimate: number;
     total_time_spent: number;
     human_time_estimate: string;
     human_total_time_spent: string;
 }
 
-export interface IGitlabMergeRequestDetailMilestone {
+export interface GitlabMergeRequestDetailMilestone {
     id: number;
     iid: number;
     project_id: number;
@@ -104,13 +101,13 @@ export interface IGitlabMergeRequestDetailMilestone {
     web_url: string;
 }
 
-export interface IGitlabMergeRequestDetailDiffRefs {
+export interface GitlabMergeRequestDetailDiffRefs {
     base_sha: string;
     head_sha: string;
     start_sha: string;
 }
 
-export interface IGitlabMergeRequestDetailPipeline {
+export interface GitlabMergeRequestDetailPipeline {
     id: number;
     sha: string;
     ref: string;
@@ -118,22 +115,22 @@ export interface IGitlabMergeRequestDetailPipeline {
     web_url: string;
 }
 
-export interface IGitlabMergeRequestUrlInfo {
+export interface GitlabMergeRequestUrlInfo {
     repository: string;
     id: string;
 }
 
-export interface IGitlabMergeRequestReaction {
+export interface GitlabMergeRequestReaction {
     id: number;
     name: string;
-    user: IGitlabUser;
+    user: GitlabUser;
     created_at: Date;
     updated_at: Date;
     awardable_id: number;
     awardable_type: string;
 }
 
-export interface IGitlabMergeRequestDiscussionNotePosition {
+export interface GitlabMergeRequestDiscussionNotePosition {
     base_sha: string;
     start_sha: string;
     head_sha: string;
@@ -144,26 +141,26 @@ export interface IGitlabMergeRequestDiscussionNotePosition {
     new_line: number;
 }
 
-export interface IGitlabMergeRequestDiscussionNote {
+export interface GitlabMergeRequestDiscussionNote {
     id: number;
     type: string;
     body: string;
     attachment?: any;
-    author: IGitlabUser;
+    author: GitlabUser;
     created_at: Date;
     updated_at: Date;
     system: boolean;
     noteable_id: number;
     noteable_type: string;
-    position: IGitlabMergeRequestDiscussionNotePosition;
+    position: GitlabMergeRequestDiscussionNotePosition;
     resolvable: boolean;
     resolved: boolean;
-    resolved_by?: IGitlabUser;
+    resolved_by?: GitlabUser;
     noteable_iid: number;
 }
 
-export interface IGitlabMergeRequestDiscussion {
+export interface GitlabMergeRequestDiscussion {
     id: string;
     individual_note: boolean;
-    notes: IGitlabMergeRequestDiscussionNote[];
+    notes: GitlabMergeRequestDiscussionNote[];
 }

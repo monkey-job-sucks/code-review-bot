@@ -1,12 +1,12 @@
 import {
-    IAzurePullRequestDetail,
-    IAzurePullRequestReviewer,
-    IAzurePullRequestThread,
-    IAzureThread,
+    AzurePullRequestDetail,
+    AzurePullRequestReviewer,
+    AzurePullRequestThread,
+    AzureThread,
 } from './azure.interfaces';
 
-const getReviewers = (pullRequest: IAzurePullRequestDetail): IAzurePullRequestReviewer[] => {
-    const reviewers: IAzurePullRequestReviewer[] = pullRequest.reviewers
+const getReviewers = (pullRequest: AzurePullRequestDetail): AzurePullRequestReviewer[] => {
+    const reviewers: AzurePullRequestReviewer[] = pullRequest.reviewers
         .reduce((reviews, review) => {
             if (review.isContainer) return reviews;
 
@@ -21,11 +21,11 @@ const getReviewers = (pullRequest: IAzurePullRequestDetail): IAzurePullRequestRe
     return reviewers;
 };
 
-const getThreads = (pullRequestThreads: IAzureThread): IAzurePullRequestThread[] => {
+const getThreads = (pullRequestThreads: AzureThread): AzurePullRequestThread[] => {
     const { value } = pullRequestThreads;
 
-    const threads: IAzurePullRequestThread[] = value
-        .reduce((prthreads: IAzurePullRequestThread[], thread) => {
+    const threads: AzurePullRequestThread[] = value
+        .reduce((prthreads: AzurePullRequestThread[], thread) => {
             if (thread?.comments[0]?.commentType !== 'system') {
                 prthreads.push({
                     'status': thread.status,

@@ -1,11 +1,11 @@
 import axios, { AxiosInstance } from 'axios';
 
-import { ISettingsModel } from '../mongo';
+import { SettingsModel } from '../mongo';
 import {
-    IAzurePullRequest,
-    IAzurePullRequestReviewer,
-    IAzurePullRequestDetail,
-    IAzurePullRequestThread,
+    AzurePullRequest,
+    AzurePullRequestReviewer,
+    AzurePullRequestDetail,
+    AzurePullRequestThread,
 } from './azure.interfaces';
 import Message from '../../helpers/Message';
 import helper from './azure.helper';
@@ -20,7 +20,7 @@ class Azure {
 
     private api: AxiosInstance;
 
-    public init(settings: ISettingsModel): void {
+    public init(settings: SettingsModel): void {
         this.host = settings.azure.host;
         this.token = Buffer.from(`:${settings.azure.personalToken}`).toString('base64');
         this.apiVersion = settings.azure.apiVersion;
@@ -40,7 +40,7 @@ class Azure {
         return url.startsWith(this.host);
     }
 
-    public async getPullRequestDetail(url: string): Promise<IAzurePullRequest> {
+    public async getPullRequestDetail(url: string): Promise<AzurePullRequest> {
         try {
             if (!this.itsMine(url)) {
                 throw new Message('Não posso aceitar prs desse git :disappointed:');
@@ -72,7 +72,7 @@ class Azure {
         }
     }
 
-    public async getPullRequestReviewers(url: string): Promise<IAzurePullRequestReviewer[]> {
+    public async getPullRequestReviewers(url: string): Promise<AzurePullRequestReviewer[]> {
         const info = helper.getUrlInfo(this.host, url);
 
         const response = await this.api({
@@ -83,7 +83,7 @@ class Azure {
         return factory.getReviewers(response.data);
     }
 
-    public async getPullRequestThreads(url: string): Promise<IAzurePullRequestThread[]> {
+    public async getPullRequestThreads(url: string): Promise<AzurePullRequestThread[]> {
         const info = helper.getUrlInfo(this.host, url);
 
         const detailResponse = await this.api({
@@ -91,7 +91,7 @@ class Azure {
             'url': `${info.organization}/${info.project}/_apis/git/pullrequests/${info.id}`,
         });
 
-        const pullRequest: IAzurePullRequestDetail = detailResponse.data;
+        const pullRequest: AzurePullRequestDetail = detailResponse.data;
 
         const threadResponse = await this.api({
             'method': 'GET',

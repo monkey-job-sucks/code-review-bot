@@ -1,15 +1,15 @@
 import * as _ from 'lodash';
 
-import { IFinishedReaction, IUpvoteReactions, IDiscussionReaction } from './fetch-updates.interface';
-import { IReviewRequestModel, ISettingsModel } from '../../api/mongo';
-import { IGitlabMergeRequestDetail, IGitlabMergeRequestReaction, IGitlabMergeRequestDiscussion } from '../../api/gitlab';
+import { FinishedReaction, UpvoteReactions, DiscussionReaction } from './fetch-updates.interface';
+import { ReviewRequestModel, SettingsModel } from '../../api/mongo';
+import { GitlabMergeRequestDetail, GitlabMergeRequestReaction, GitlabMergeRequestDiscussion } from '../../api/gitlab';
 import slackHelper from '../../api/slack/slack.helper';
 
 const getUpvoteReactions = (
-    currentMR: IReviewRequestModel,
-    remoteReactions: IGitlabMergeRequestReaction[],
-): IUpvoteReactions => {
-    const upvote: IUpvoteReactions = {
+    currentMR: ReviewRequestModel,
+    remoteReactions: GitlabMergeRequestReaction[],
+): UpvoteReactions => {
+    const upvote: UpvoteReactions = {
         'reactions': {
             'add': [],
             'remove': [],
@@ -17,7 +17,7 @@ const getUpvoteReactions = (
     };
 
     const remoteUpvoters = remoteReactions
-        .reduce((names: string[], reaction: IGitlabMergeRequestReaction) => {
+        .reduce((names: string[], reaction: GitlabMergeRequestReaction) => {
             if (reaction.name === 'thumbsup') names.push(reaction.user.username);
 
             return names;
@@ -49,11 +49,11 @@ const getUpvoteReactions = (
 };
 
 const getDiscussionReaction = (
-    settings: ISettingsModel,
-    currentMR: IReviewRequestModel,
-    remoteDiscussions: IGitlabMergeRequestDiscussion[],
-): IDiscussionReaction => {
-    const discussion: IDiscussionReaction = {
+    settings: SettingsModel,
+    currentMR: ReviewRequestModel,
+    remoteDiscussions: GitlabMergeRequestDiscussion[],
+): DiscussionReaction => {
+    const discussion: DiscussionReaction = {
         'reactions': {
             'add': [],
             'remove': [],
@@ -91,10 +91,10 @@ const getDiscussionReaction = (
 };
 
 const getFinishedReaction = (
-    settings: ISettingsModel,
-    remoteMR: IGitlabMergeRequestDetail,
-): IFinishedReaction => {
-    const finished: IFinishedReaction = {};
+    settings: SettingsModel,
+    remoteMR: GitlabMergeRequestDetail,
+): FinishedReaction => {
+    const finished: FinishedReaction = {};
 
     // check if already finished
     switch (remoteMR.state) {

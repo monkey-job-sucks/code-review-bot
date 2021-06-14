@@ -6,112 +6,112 @@ export enum EReviewRequestOrigin {
     AZURE = 'azure',
 }
 
-export interface IReviewRequestModel extends Document {
+export interface ReviewRequestModel extends Document {
     rawReviewRequest: string;
     rawSlackMessage: string;
     origin: EReviewRequestOrigin;
     repository: string;
     id: string;
-    gitlab?: IReviewRequestGitlab;
-    azure?: IReviewRequestAzure;
+    gitlab?: ReviewRequestGitlab;
+    azure?: ReviewRequestAzure;
     url: string;
-    created: IReviewRequestModelActionLog;
-    added: IReviewRequestModelActionLog;
-    merged?: IReviewRequestModelActionLog;
-    closed?: IReviewRequestModelActionLog;
-    slack: IReviewRequestModelSlack;
-    analytics?: IReviewRequestModelAnalytics;
+    created: ReviewRequestModelActionLog;
+    added: ReviewRequestModelActionLog;
+    merged?: ReviewRequestModelActionLog;
+    closed?: ReviewRequestModelActionLog;
+    slack: ReviewRequestModelSlack;
+    analytics?: ReviewRequestModelAnalytics;
     done?: boolean;
 }
 
-export interface IReviewRequestGitlab {
+export interface ReviewRequestGitlab {
     iid: string;
 }
 
-export interface IReviewRequestAzure {
+export interface ReviewRequestAzure {
     organization: string;
     project: string;
 }
 
-export interface IChannelReviewRequests {
+export interface ChannelReviewRequests {
     _id: string;
-    reviews?: IReviewRequestModel[];
+    reviews?: ReviewRequestModel[];
 }
 
-export interface IReviewRequestModelActionLog {
+export interface ReviewRequestModelActionLog {
     at: Date;
     by: string;
 }
 
-interface IReviewRequestModelAnalytics {
+interface ReviewRequestModelAnalytics {
     upvoters: string[];
     reviewers: string[];
 }
 
-interface IReviewRequestModelSlack {
+interface ReviewRequestModelSlack {
     messageId: string;
     reactions?: string[];
-    channel: IMergeRequestModelSlackChannel;
+    channel: MergeRequestModelSlackChannel;
 }
 
-interface IMergeRequestModelSlackChannel {
+interface MergeRequestModelSlackChannel {
     id: string;
     name: string;
 }
 
-interface ISettingsGitlab {
+interface SettingsGitlab {
     host: string;
     apiVersion: string;
     personalToken: string;
 }
 
-interface ISettingsSlackReactions {
+interface SettingsSlackReactions {
     discussion: string;
     merged: string;
     closed: string;
 }
 
-interface ISettingsSlackLog {
+interface SettingsSlackLog {
     enabled: boolean;
     channelId: string;
     maxTextMessageSize: number;
 }
 
-interface ISettingsSlack {
+interface SettingsSlack {
     secret: string;
     token: string;
     verificationToken: string;
     webhookPath: string;
     requestAddColor: string;
     allowedChannels: string;
-    reactions: ISettingsSlackReactions,
-    log: ISettingsSlackLog;
+    reactions: SettingsSlackReactions;
+    log: SettingsSlackLog;
 }
 
-interface ISettingsModelCronBase {
+interface SettingsModelCronBase {
     enabled: boolean;
     pattern: string;
 }
 
-interface ISettingsModelCronOpenRequests extends ISettingsModelCronBase {
+interface SettingsModelCronOpenRequests extends SettingsModelCronBase {
     hours: number;
 }
 
-interface ISettingsModelCron {
-    notifyRanking: ISettingsModelCronBase,
-    openRequests: ISettingsModelCronOpenRequests,
-    fetchRequestsUpdates: ISettingsModelCronBase,
+interface SettingsModelCron {
+    notifyRanking: SettingsModelCronBase;
+    openRequests: SettingsModelCronOpenRequests;
+    fetchRequestsUpdates: SettingsModelCronBase;
 }
 
-interface ISettingsAzure {
+interface SettingsAzure {
     host: string;
     apiVersion: string;
     personalToken: string;
 }
 
-export interface ISettingsModel extends Document {
-    cron: ISettingsModelCron,
-    gitlab?: ISettingsGitlab,
-    azure?: ISettingsAzure,
-    slack: ISettingsSlack,
+export interface SettingsModel extends Document {
+    cron: SettingsModelCron;
+    gitlab?: SettingsGitlab;
+    azure?: SettingsAzure;
+    slack: SettingsSlack;
 }

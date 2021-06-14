@@ -1,8 +1,8 @@
-import { IGitlabMergeRequestUrlInfo } from './gitlab.interfaces';
+import { GitlabMergeRequestUrlInfo } from './gitlab.interfaces';
 
 const regex = /(.*)\/merge_requests\/(.\d*)/;
 
-const getUrlInfo = (url: string): IGitlabMergeRequestUrlInfo => {
+const getUrlInfo = (url: string): GitlabMergeRequestUrlInfo => {
     const [,,, ...path] = url.split('/');
 
     const groups = regex.exec(path.join('/'));

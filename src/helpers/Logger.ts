@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { BotkitMessage } from 'botkit';
 
-import { ISettingsModel } from '../api/mongo';
+import { SettingsModel } from '../api/mongo';
 import { Slack } from '../api/slack/slack.service';
 
 enum ELevel {
@@ -22,7 +22,7 @@ class Logger {
 
     private slack: Slack;
 
-    public init(settings: ISettingsModel, slack: Slack) {
+    public init(settings: SettingsModel, slack: Slack) {
         this.slack = slack;
 
         this.SHOULD_LOG_ON_SLACK = settings.slack.log.enabled;
