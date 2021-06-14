@@ -2,7 +2,7 @@
 // this is disable because `withScope` needs
 // function instead of arrow function
 import * as SentryNode from '@sentry/node';
-import * as Tracing from '@sentry/tracing';
+
 import Context from './Context';
 
 interface SimpleObject {
