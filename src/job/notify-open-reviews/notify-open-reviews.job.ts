@@ -31,7 +31,6 @@ const notifyChannel = (
         discussionReaction,
     );
 
-    // eslint-disable-next-line no-underscore-dangle
     return slack.sendMessage({ 'channel': channelReviews._id } as BotkitMessage, message);
 };
 
