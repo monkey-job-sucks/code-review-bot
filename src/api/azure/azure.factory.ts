@@ -1,11 +1,9 @@
-/* eslint-disable no-unused-vars */
 import {
     IAzurePullRequestDetail,
     IAzurePullRequestReviewer,
     IAzurePullRequestThread,
     IAzureThread,
 } from './azure.interfaces';
-/* eslint-enable no-unused-vars */
 
 const getReviewers = (pullRequest: IAzurePullRequestDetail): IAzurePullRequestReviewer[] => {
     const reviewers: IAzurePullRequestReviewer[] = pullRequest.reviewers

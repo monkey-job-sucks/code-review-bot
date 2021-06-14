@@ -1,4 +1,4 @@
-/* eslint-disable import/prefer-default-export, no-unused-vars */
+/* eslint-disable import/prefer-default-export */
 import { Document } from 'mongoose';
 
 export enum EReviewRequestOrigin {

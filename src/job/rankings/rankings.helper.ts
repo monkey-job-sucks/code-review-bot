@@ -1,7 +1,5 @@
-/* eslint-disable no-unused-vars */
 import { IRanking, IRankingAnalyticsSum } from './rankings.interface';
 import { IReviewRequestModel } from '../../api/mongo';
-/* eslint-enable no-unused-vars */
 
 const sortRanking = (
     currentRanking: IRankingAnalyticsSum, nextRanking: IRankingAnalyticsSum,

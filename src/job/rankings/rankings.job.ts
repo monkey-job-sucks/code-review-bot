@@ -1,11 +1,9 @@
 import * as moment from 'moment';
-/* eslint-disable no-unused-vars */
 import { BotkitMessage } from 'botkit';
 
 import { IRanking } from './rankings.interface';
 import { ReviewRequest, IReviewRequestModel } from '../../api/mongo';
 import { IJobConfig } from '../job.interface';
-/* eslint-enable no-unused-vars */
 import jobManager from '../job-manager';
 import slack from '../../api/slack/slack.service';
 import helper from './rankings.helper';

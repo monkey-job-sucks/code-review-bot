@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { BotWorker, BotkitMessage } from 'botkit';
 
 import slack from './slack.service';
@@ -8,7 +7,6 @@ import {
 } from '../mongo';
 import { service as gitlab } from '../gitlab';
 import { service as azure } from '../azure';
-/* eslint-enable no-unused-vars */
 import Message from '../../helpers/Message';
 import helper from './slack.commands.helper';
 

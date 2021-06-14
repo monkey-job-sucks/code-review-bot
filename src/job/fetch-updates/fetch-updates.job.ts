@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import { PromiseQueue, PromiseQueueItemResponse } from 'promise-queue-manager';
 
 import gitlabHelper from './fetch-updates.gitlab.helper';
@@ -7,7 +6,6 @@ import logger from '../../helpers/Logger';
 import { service as slack } from '../../api/slack';
 import jobManager from '../job-manager';
 
-/* eslint-disable no-unused-vars */
 import {
     ReviewRequest,
     ISettingsModel,
@@ -24,7 +22,6 @@ import {
 import { IJobConfig } from '../job.interface';
 import { service as gitlab, IGitlabMergeRequestDetail } from '../../api/gitlab';
 import { service as azure, IAzurePullRequestDetail } from '../../api/azure';
-/* eslint-enable no-unused-vars */
 
 const CONCURRENCE = 10;
 const SHOULD_STOP_ON_ERROR = false;

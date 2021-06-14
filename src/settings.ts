@@ -1,9 +1,7 @@
-/* eslint-disable no-unused-vars */
 import {
     Settings,
     ISettingsModel,
 } from './api/mongo';
-/* eslint-enable no-unused-vars */
 
 const DEFAULT_SETTINGS: Partial<ISettingsModel> = {
     'cron': {

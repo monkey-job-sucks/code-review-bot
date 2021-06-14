@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import axios, { AxiosInstance } from 'axios';
 
 import helper from './gitlab.helper';
@@ -10,7 +9,6 @@ import {
     IGitlabMergeRequestDiscussion,
 } from './gitlab.interfaces';
 import { ISettingsModel } from '../mongo';
-/* eslint-enable no-unused-vars */
 import Message from '../../helpers/Message';
 
 // TODO:

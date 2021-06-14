@@ -1,11 +1,9 @@
-/* eslint-disable no-unused-vars */
 import { BotkitMessage } from 'botkit';
 import * as moment from 'moment';
 
 import { ReviewRequest, IReviewRequestModel, ISettingsModel } from '../../api/mongo';
 import { service as slack, factory as slackFactory } from '../../api/slack';
 import { IJobConfig } from '../job.interface';
-/* eslint-enable no-unused-vars */
 import logger from '../../helpers/Logger';
 import jobManager from '../job-manager';
 

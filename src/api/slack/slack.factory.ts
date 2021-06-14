@@ -1,10 +1,8 @@
 import * as moment from 'moment';
-/* eslint-disable no-unused-vars */
 import { MessageAttachment } from '@slack/web-api';
 
 import { IChannelReviewRequests, EReviewRequestOrigin, IReviewRequestModel } from '../mongo';
 import { IRanking } from '../../job/rankings/rankings.interface';
-/* eslint-enable no-unused-vars */
 
 moment.locale('pt-br');
 

@@ -1,10 +1,8 @@
-/* eslint-disable no-unused-vars */
 import { Botkit, BotkitMessage, BotWorker } from 'botkit';
 import { SlackAdapter, SlackEventMiddleware, SlackMessageTypeMiddleware } from 'botbuilder-adapter-slack';
 import { FilesUploadArguments } from '@slack/web-api';
 
 import { ISettingsModel } from '../mongo';
-/* eslint-enabled no-unused-vars */
 
 import Context from '../../helpers/Context';
 import commands from './slack.commands';

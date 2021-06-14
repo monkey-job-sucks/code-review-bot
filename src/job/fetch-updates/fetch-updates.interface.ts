@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import { IReviewRequestModelActionLog } from '../../api/mongo';
 
 export interface IReactions {

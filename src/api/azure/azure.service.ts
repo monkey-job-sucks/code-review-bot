@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import axios, { AxiosInstance } from 'axios';
 
 import { ISettingsModel } from '../mongo';
@@ -8,7 +7,6 @@ import {
     IAzurePullRequestDetail,
     IAzurePullRequestThread,
 } from './azure.interfaces';
-/* eslint-enable no-unused-vars */
 import Message from '../../helpers/Message';
 import helper from './azure.helper';
 import factory from './azure.factory';

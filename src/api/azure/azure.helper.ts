@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import { IAzurePullRequestUrlInfo } from './azure.interfaces';
 
 const regex = /(.*)\/_git\/(.*)\/pullrequest\/(\d*)/;

@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import { IGitlabMergeRequestUrlInfo } from './gitlab.interfaces';
 
 const regex = /(.*)\/merge_requests\/(.\d*)/;

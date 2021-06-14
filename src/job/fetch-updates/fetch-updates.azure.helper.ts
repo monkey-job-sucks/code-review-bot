@@ -1,10 +1,8 @@
 import * as _ from 'lodash';
 
-/* eslint-disable no-unused-vars */
 import { IFinishedReaction, IUpvoteReactions, IDiscussionReaction } from './fetch-updates.interface';
 import { IReviewRequestModel, ISettingsModel } from '../../api/mongo';
 import { IAzurePullRequestDetail, IAzurePullRequestReviewer, IAzurePullRequestThread } from '../../api/azure';
-/* eslint-enable no-unused-vars */
 import slackHelper from '../../api/slack/slack.helper';
 
 const getUpvoteReactions = (
