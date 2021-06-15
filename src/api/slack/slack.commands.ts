@@ -22,9 +22,11 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
 
         switch (origin) {
             case EReviewRequestOrigin.GITLAB:
-                return helper.saveGitlabMR(bot, message);
+                await helper.saveGitlabMR(bot, message);
+                break;
             case EReviewRequestOrigin.AZURE:
-                return helper.saveAzurePR(bot, message);
+                await helper.saveAzurePR(bot, message);
+                break;
             default:
                 throw new Message('Não posso aceitar links desse git :disappointed:');
         }
@@ -32,12 +34,12 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
         if (err instanceof Message) {
             logger.info(err);
 
-            return slack.sendEphemeral(message, err.message);
+            await slack.sendEphemeral(message, err.message);
+        } else {
+            logger.error(err.stack || err);
+
+            throw err;
         }
-
-        logger.error(err.stack || err);
-
-        throw err;
     }
 };
 
