@@ -1,11 +1,15 @@
 {
     "parser": "@typescript-eslint/parser",
     "plugins": ["@typescript-eslint"],
-    "extends": "airbnb",
+    "extends": [
+      "airbnb",
+      "plugin:@typescript-eslint/recommended"
+    ],
     "rules": {
       "indent": ["error", 4, { "SwitchCase": 1 }],      
       "quote-props": ["error", "always"],
-      "import/no-cycle": [0]
+      "import/no-cycle": [0],
+      "no-underscore-dangle": ["error", { "allow": ["_id"] }]
     },
     "settings": {
       "import/extensions": [".js",".jsx",".ts",".tsx"],

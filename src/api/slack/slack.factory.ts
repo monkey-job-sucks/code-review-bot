@@ -1,16 +1,14 @@
 import * as moment from 'moment';
-/* eslint-disable no-unused-vars */
 import { MessageAttachment } from '@slack/web-api';
 
-import { IChannelReviewRequests, EReviewRequestOrigin, IReviewRequestModel } from '../mongo';
-import { IRanking } from '../../job/rankings/rankings.interface';
-/* eslint-enable no-unused-vars */
+import { ChannelReviewRequests, EReviewRequestOrigin, ReviewRequestModel } from '../mongo';
+import { Ranking } from '../../job/rankings/rankings.interface';
 
 moment.locale('pt-br');
 
 const rankingEmojis = [':first_place_medal:', ':second_place_medal:', ':third_place_medal:'];
 
-const getOpenReviewSlackMessage = (review: IReviewRequestModel): string => {
+const getOpenReviewSlackMessage = (review: ReviewRequestModel): string => {
     const openedSince = moment(review.added.at).fromNow();
 
     switch (review.origin) {
@@ -24,7 +22,7 @@ const getOpenReviewSlackMessage = (review: IReviewRequestModel): string => {
 };
 
 const getOpenReviewMessages = (
-    reviews: IReviewRequestModel[],
+    reviews: ReviewRequestModel[],
 ): string[] => reviews.map(getOpenReviewSlackMessage).filter((message) => !!message);
 
 const generateAddedReviewRequestMessage = (
@@ -42,7 +40,7 @@ const generateAddedReviewRequestMessage = (
 };
 
 const generateDelayedReviewRequestsMessage = (
-    delayedRequests: IChannelReviewRequests,
+    delayedRequests: ChannelReviewRequests,
     discussionReaction: string,
 ): string => {
     const reviews = {
@@ -76,7 +74,7 @@ const generateDelayedReviewRequestsMessage = (
     return messages.join('\r');
 };
 
-const generateRankingMessage = (ranking: IRanking): string => {
+const generateRankingMessage = (ranking: Ranking): string => {
     const messages: string[] = [];
 
     if (ranking.upvoters.length > 0 || ranking.reviewers.length > 0) {

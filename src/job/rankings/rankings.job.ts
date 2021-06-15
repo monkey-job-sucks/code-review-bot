@@ -1,11 +1,9 @@
 import * as moment from 'moment';
-/* eslint-disable no-unused-vars */
 import { BotkitMessage } from 'botkit';
 
-import { IRanking } from './rankings.interface';
-import { ReviewRequest, IReviewRequestModel } from '../../api/mongo';
-import { IJobConfig } from '../job.interface';
-/* eslint-enable no-unused-vars */
+import { Ranking } from './rankings.interface';
+import { ReviewRequest, ReviewRequestModel } from '../../api/mongo';
+import { JobConfig } from '../job.interface';
 import jobManager from '../job-manager';
 import slack from '../../api/slack/slack.service';
 import helper from './rankings.helper';
@@ -18,10 +16,10 @@ const fetchElegibleReviews = async (
     amount: number,
     unit: string,
     period: string,
-): Promise<IRanking[]> => {
+): Promise<Ranking[]> => {
     const cutDate = moment().subtract(amount as any, unit as any).toDate();
 
-    const elegibles: IReviewRequestModel[] = await ReviewRequest.aggregate()
+    const elegibles: ReviewRequestModel[] = await ReviewRequest.aggregate()
         .match({ 'merged.at': { '$gte': cutDate } })
         .exec();
 
@@ -44,7 +42,7 @@ const notifyRanking = async () => {
     }
 };
 
-const rankingjob: IJobConfig = {
+const rankingjob: JobConfig = {
     'function': () => async function ranking() {
         if (jobManager.isRunning(JOB_NAME)) return false;
 

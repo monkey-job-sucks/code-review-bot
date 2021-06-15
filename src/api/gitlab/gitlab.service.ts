@@ -1,16 +1,14 @@
-/* eslint-disable no-unused-vars */
 import axios, { AxiosInstance } from 'axios';
 
 import helper from './gitlab.helper';
 import {
-    IGitlabMergeRequest,
+    GitlabMergeRequest,
     EGitlabMergeRequestResource,
-    IGitlabMergeRequestUrlInfo,
-    IGitlabMergeRequestReaction,
-    IGitlabMergeRequestDiscussion,
+    GitlabMergeRequestUrlInfo,
+    GitlabMergeRequestReaction,
+    GitlabMergeRequestDiscussion,
 } from './gitlab.interfaces';
-import { ISettingsModel } from '../mongo';
-/* eslint-enable no-unused-vars */
+import { SettingsModel } from '../mongo';
 import Message from '../../helpers/Message';
 
 // TODO:
@@ -25,7 +23,7 @@ class Gitlab {
 
     private api: AxiosInstance;
 
-    public init(settings: ISettingsModel): void {
+    public init(settings: SettingsModel): void {
         this.host = settings.gitlab.host;
         this.token = settings.gitlab.personalToken;
         this.apiVersion = settings.gitlab.apiVersion;
@@ -43,8 +41,8 @@ class Gitlab {
     }
 
     // TODO: aceitar url ou repository e id
-    public async getMergeRequestDetail(url: string): Promise<IGitlabMergeRequest> {
-        let info: IGitlabMergeRequestUrlInfo;
+    public async getMergeRequestDetail(url: string): Promise<GitlabMergeRequest> {
+        let info: GitlabMergeRequestUrlInfo;
 
         try {
             if (!this.itsMine(url)) {
@@ -88,8 +86,8 @@ class Gitlab {
     }
 
     // TODO: aceitar url ou repository e id
-    public async getMergeRequestReactions(url: string): Promise<IGitlabMergeRequestReaction[]> {
-        const info: IGitlabMergeRequestUrlInfo = helper.getUrlInfo(url);
+    public async getMergeRequestReactions(url: string): Promise<GitlabMergeRequestReaction[]> {
+        const info: GitlabMergeRequestUrlInfo = helper.getUrlInfo(url);
 
         const encodedRepository = encodeURIComponent(info.repository);
 
@@ -101,8 +99,8 @@ class Gitlab {
         return response.data;
     }
 
-    public async getMergeRequestDiscussions(url: string): Promise<IGitlabMergeRequestDiscussion[]> {
-        const info: IGitlabMergeRequestUrlInfo = helper.getUrlInfo(url);
+    public async getMergeRequestDiscussions(url: string): Promise<GitlabMergeRequestDiscussion[]> {
+        const info: GitlabMergeRequestUrlInfo = helper.getUrlInfo(url);
 
         const encodedRepository = encodeURIComponent(info.repository);
 

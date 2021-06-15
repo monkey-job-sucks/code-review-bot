@@ -1,4 +1,4 @@
-export interface IAzurePullRequestDetailProject {
+export interface AzurePullRequestDetailProject {
     id: string;
     name: string;
     description: string;
@@ -9,45 +9,45 @@ export interface IAzurePullRequestDetailProject {
     lastUpdateTime: Date;
 }
 
-export interface IAzurePullRequestDetailRepository {
+export interface AzurePullRequestDetailRepository {
     id: string;
     name: string;
     url: string;
-    project: IAzurePullRequestDetailProject;
+    project: AzurePullRequestDetailProject;
     size: number;
     remoteUrl: string;
     sshUrl: string;
     webUrl: string;
 }
 
-export interface IAzurePullRequestDetailAuthor {
+export interface AzurePullRequestDetailAuthor {
     displayName: string;
     url: string;
-    _links: IAzureThreadAvatar;
+    _links: AzureThreadAvatar;
     id: string;
     uniqueName: string;
     imageUrl: string;
     descriptor: string;
 }
 
-export interface IAzurePullRequestDetailLastMergeCommit {
+export interface AzurePullRequestDetailLastMergeCommit {
     commitId: string;
     url: string;
 }
 
-export interface IAzurePullRequestDetailReviewerVotedFor {
+export interface AzurePullRequestDetailReviewerVotedFor {
     reviewerUrl: string;
     vote: number;
     displayName: string;
     url: string;
-    _links: IAzureThreadAvatar;
+    _links: AzureThreadAvatar;
     id: string;
     uniqueName: string;
     imageUrl: string;
     isContainer: boolean;
 }
 
-export interface IAzurePullRequestDetailReviewer {
+export interface AzurePullRequestDetailReviewer {
     reviewerUrl: string;
     vote: number;
     hasDeclined: boolean;
@@ -55,21 +55,21 @@ export interface IAzurePullRequestDetailReviewer {
     isFlagged: boolean;
     displayName: string;
     url: string;
-    _links: IAzureThreadAvatar;
+    _links: AzureThreadAvatar;
     id: string;
     uniqueName: string;
     imageUrl: string;
     isContainer: boolean;
-    votedFor: IAzurePullRequestDetailReviewerVotedFor[];
+    votedFor: AzurePullRequestDetailReviewerVotedFor[];
 }
 
-export interface IAzurePullRequestDetail {
-    repository: IAzurePullRequestDetailRepository;
+export interface AzurePullRequestDetail {
+    repository: AzurePullRequestDetailRepository;
     pullRequestId: number;
     codeReviewId: number;
     status: string;
-    createdBy: IAzurePullRequestDetailAuthor;
-    closedBy?: IAzurePullRequestDetailAuthor;
+    createdBy: AzurePullRequestDetailAuthor;
+    closedBy?: AzurePullRequestDetailAuthor;
     creationDate: Date;
     closedDate: Date;
     title: string;
@@ -77,56 +77,56 @@ export interface IAzurePullRequestDetail {
     targetRefName: string;
     isDraft: boolean;
     mergeId: string;
-    lastMergeSourceCommit: IAzurePullRequestDetailLastMergeCommit;
-    lastMergeTargetCommit: IAzurePullRequestDetailLastMergeCommit;
-    reviewers: IAzurePullRequestDetailReviewer[];
+    lastMergeSourceCommit: AzurePullRequestDetailLastMergeCommit;
+    lastMergeTargetCommit: AzurePullRequestDetailLastMergeCommit;
+    reviewers: AzurePullRequestDetailReviewer[];
     url: string;
     supportsIterations: boolean;
     artifactId: string;
 }
 
-export interface IAzurePullRequest {
-    info: IAzurePullRequestUrlInfo;
+export interface AzurePullRequest {
+    info: AzurePullRequestUrlInfo;
     url: string;
     repository: string;
-    detail: IAzurePullRequestDetail;
+    detail: AzurePullRequestDetail;
 }
 
-export interface IAzurePullRequestUrlInfo {
+export interface AzurePullRequestUrlInfo {
     organization: string;
     project: string;
     repository: string;
     id: number;
 }
 
-export interface IAzurePullRequestReviewer {
+export interface AzurePullRequestReviewer {
     vote: number;
     uniqueName: string;
 }
 
-export interface IAzurePullRequestThreadComment {
+export interface AzurePullRequestThreadComment {
     id: number;
     author: string;
     content: string;
 }
 
-export interface IAzurePullRequestThread {
+export interface AzurePullRequestThread {
     status: string;
-    comments: IAzurePullRequestThreadComment[];
+    comments: AzurePullRequestThreadComment[];
 }
 
-export interface IAzureThreadValuePullRequestThreadContextIterationContext {
+export interface AzureThreadValuePullRequestThreadContextIterationContext {
     firstComparingIteration: number;
     secondComparingIteration: number;
 }
 
-export interface IAzureThreadValuePullRequestThreadContext {
-    iterationContext: IAzureThreadValuePullRequestThreadContextIterationContext;
+export interface AzureThreadValuePullRequestThreadContext {
+    iterationContext: AzureThreadValuePullRequestThreadContextIterationContext;
     changeTrackingId: number;
 }
 
 export interface AuthorLinks {
-    avatar: IAzureThreadValueHref;
+    avatar: AzureThreadValueHref;
 }
 
 export interface Author {
@@ -139,14 +139,14 @@ export interface Author {
     descriptor: string;
 }
 
-export interface IAzureThreadValueCommentLinks {
-    self: IAzureThreadValueHref;
-    repository: IAzureThreadValueHref;
-    threads: IAzureThreadValueHref;
-    pullRequests: IAzureThreadValueHref;
+export interface AzureThreadValueCommentLinks {
+    self: AzureThreadValueHref;
+    repository: AzureThreadValueHref;
+    threads: AzureThreadValueHref;
+    pullRequests: AzureThreadValueHref;
 }
 
-export interface IAzureThreadValueComment {
+export interface AzureThreadValueComment {
     id: number;
     parentCommentId: number;
     author: Author;
@@ -156,69 +156,69 @@ export interface IAzureThreadValueComment {
     lastContentUpdatedDate: Date;
     commentType: string;
     usersLiked: any[];
-    _links: IAzureThreadValueCommentLinks;
+    _links: AzureThreadValueCommentLinks;
 }
 
-export interface IAzureThreadValueThreadContextFile {
+export interface AzureThreadValueThreadContextFile {
     line: number;
     offset: number;
 }
 
-export interface IAzureThreadValueThreadContext {
+export interface AzureThreadValueThreadContext {
     filePath: string;
-    rightFileStart: IAzureThreadValueThreadContextFile;
-    rightFileEnd: IAzureThreadValueThreadContextFile;
-    leftFileStart: IAzureThreadValueThreadContextFile;
-    leftFileEnd: IAzureThreadValueThreadContextFile;
+    rightFileStart: AzureThreadValueThreadContextFile;
+    rightFileEnd: AzureThreadValueThreadContextFile;
+    leftFileStart: AzureThreadValueThreadContextFile;
+    leftFileEnd: AzureThreadValueThreadContextFile;
 }
 
-export interface IAzureThreadValueTypeValue {
+export interface AzureThreadValueTypeValue {
     $type: string;
     $value: number;
 }
 
-export interface IAzureThreadValueProperties {
-    'Microsoft.TeamFoundation.Discussion.SupportsMarkdown': IAzureThreadValueTypeValue;
-    'Microsoft.TeamFoundation.Discussion.UniqueID': IAzureThreadValueTypeValue;
-    CodeReviewThreadType: IAzureThreadValueTypeValue;
-    CodeReviewReviewersUpdatedNumAdded: IAzureThreadValueTypeValue;
-    CodeReviewReviewersUpdatedNumChanged: IAzureThreadValueTypeValue;
-    CodeReviewReviewersUpdatedNumDeclined: IAzureThreadValueTypeValue;
-    CodeReviewReviewersUpdatedNumRemoved: IAzureThreadValueTypeValue;
-    CodeReviewReviewersUpdatedAddedIdentity: IAzureThreadValueTypeValue;
-    CodeReviewReviewersUpdatedByIdentity: IAzureThreadValueTypeValue;
-    CodeReviewVoteResult: IAzureThreadValueTypeValue;
-    CodeReviewVotedByInitiatorIdentity: IAzureThreadValueTypeValue;
-    CodeReviewVotedByIdentity: IAzureThreadValueTypeValue;
+export interface AzureThreadValueProperties {
+    'Microsoft.TeamFoundation.Discussion.SupportsMarkdown': AzureThreadValueTypeValue;
+    'Microsoft.TeamFoundation.Discussion.UniqueID': AzureThreadValueTypeValue;
+    CodeReviewThreadType: AzureThreadValueTypeValue;
+    CodeReviewReviewersUpdatedNumAdded: AzureThreadValueTypeValue;
+    CodeReviewReviewersUpdatedNumChanged: AzureThreadValueTypeValue;
+    CodeReviewReviewersUpdatedNumDeclined: AzureThreadValueTypeValue;
+    CodeReviewReviewersUpdatedNumRemoved: AzureThreadValueTypeValue;
+    CodeReviewReviewersUpdatedAddedIdentity: AzureThreadValueTypeValue;
+    CodeReviewReviewersUpdatedByIdentity: AzureThreadValueTypeValue;
+    CodeReviewVoteResult: AzureThreadValueTypeValue;
+    CodeReviewVotedByInitiatorIdentity: AzureThreadValueTypeValue;
+    CodeReviewVotedByIdentity: AzureThreadValueTypeValue;
 }
 
-export interface IAzureThreadAvatar {
-    avatar: IAzureThreadValueHref;
+export interface AzureThreadAvatar {
+    avatar: AzureThreadValueHref;
 }
 
-export interface IAzureThreadValueLinks4 {
-    self: IAzureThreadValueHref;
-    repository: IAzureThreadValueHref;
+export interface AzureThreadValueLinks4 {
+    self: AzureThreadValueHref;
+    repository: AzureThreadValueHref;
 }
 
-export interface IAzureThreadValueHref {
+export interface AzureThreadValueHref {
     href: string;
 }
 
-export interface IAzureThreadValue {
-    pullRequestThreadContext: IAzureThreadValuePullRequestThreadContext;
+export interface AzureThreadValue {
+    pullRequestThreadContext: AzureThreadValuePullRequestThreadContext;
     id: number;
     publishedDate: Date;
     lastUpdatedDate: Date;
-    comments: IAzureThreadValueComment[];
+    comments: AzureThreadValueComment[];
     status: string;
-    threadContext: IAzureThreadValueThreadContext;
-    properties: IAzureThreadValueProperties;
+    threadContext: AzureThreadValueThreadContext;
+    properties: AzureThreadValueProperties;
     isDeleted: boolean;
-    _links: IAzureThreadValueLinks4;
+    _links: AzureThreadValueLinks4;
 }
 
-export interface IAzureThread {
-    value: IAzureThreadValue[];
+export interface AzureThread {
+    value: AzureThreadValue[];
     count: number;
 }

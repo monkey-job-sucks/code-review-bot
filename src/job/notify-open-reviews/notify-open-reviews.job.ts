@@ -1,17 +1,15 @@
-/* eslint-disable no-unused-vars */
 import { BotkitMessage } from 'botkit';
 import * as moment from 'moment';
 
-import { ReviewRequest, IReviewRequestModel, ISettingsModel } from '../../api/mongo';
+import { ReviewRequest, ReviewRequestModel, SettingsModel } from '../../api/mongo';
 import { service as slack, factory as slackFactory } from '../../api/slack';
-import { IJobConfig } from '../job.interface';
-/* eslint-enable no-unused-vars */
+import { JobConfig } from '../job.interface';
 import logger from '../../helpers/Logger';
 import jobManager from '../job-manager';
 
 const JOB_NAME = 'notify-open-reviews';
 
-const fetchDelayedReviews = (hours: number): Promise<IReviewRequestModel[]> => {
+const fetchDelayedReviews = (hours: number): Promise<ReviewRequestModel[]> => {
     const cutDate = moment().subtract(hours, 'hours').toDate();
 
     return ReviewRequest.aggregate()
@@ -25,7 +23,7 @@ const fetchDelayedReviews = (hours: number): Promise<IReviewRequestModel[]> => {
 };
 
 const notifyChannel = (
-    channelReviews: IReviewRequestModel,
+    channelReviews: ReviewRequestModel,
     discussionReaction: string,
 ) => {
     const message = slackFactory.generateDelayedReviewRequestsMessage(
@@ -33,11 +31,10 @@ const notifyChannel = (
         discussionReaction,
     );
 
-    // eslint-disable-next-line no-underscore-dangle
     return slack.sendMessage({ 'channel': channelReviews._id } as BotkitMessage, message);
 };
 
-const notifyDelayedReviews = async (settings: ISettingsModel): Promise<number> => {
+const notifyDelayedReviews = async (settings: SettingsModel): Promise<number> => {
     try {
         const openReviews = await fetchDelayedReviews(
             settings.cron.openRequests.hours,
@@ -57,8 +54,8 @@ const notifyDelayedReviews = async (settings: ISettingsModel): Promise<number> =
     }
 };
 
-const notifyOpenReviewsjob: IJobConfig = {
-    'function': (settings: ISettingsModel) => async function notifyOpenReviews() {
+const notifyOpenReviewsjob: JobConfig = {
+    'function': (settings: SettingsModel) => async function notifyOpenReviews() {
         if (jobManager.isRunning(JOB_NAME)) return false;
 
         jobManager.start(JOB_NAME);

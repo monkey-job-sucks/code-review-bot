@@ -1,9 +1,7 @@
 import { EventEmitter } from 'events';
-// eslint-disable-next-line no-unused-vars
 import { BotkitMessage } from 'botkit';
 
-/* eslint-disable no-unused-vars */
-import { ISettingsModel } from '../api/mongo';
+import { SettingsModel } from '../api/mongo';
 import { Slack } from '../api/slack/slack.service';
 
 enum ELevel {
@@ -12,7 +10,6 @@ enum ELevel {
     WARN = 'warn',
     ERROR = 'error',
 }
-/* eslint-enable no-unused-vars */
 
 class Logger {
     private SHOULD_LOG_ON_SLACK: boolean;
@@ -25,7 +22,7 @@ class Logger {
 
     private slack: Slack;
 
-    public init(settings: ISettingsModel, slack: Slack) {
+    public init(settings: SettingsModel, slack: Slack) {
         this.slack = slack;
 
         this.SHOULD_LOG_ON_SLACK = settings.slack.log.enabled;

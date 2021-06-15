@@ -1,15 +1,13 @@
-/* eslint-disable no-unused-vars */
 import { Botkit, BotkitMessage, BotWorker } from 'botkit';
 import { SlackAdapter, SlackEventMiddleware, SlackMessageTypeMiddleware } from 'botbuilder-adapter-slack';
 import { FilesUploadArguments } from '@slack/web-api';
 
-import { ISettingsModel } from '../mongo';
-/* eslint-enabled no-unused-vars */
+import { SettingsModel } from '../mongo';
 
 import Context from '../../helpers/Context';
 import commands from './slack.commands';
 
-interface ISlackColors {
+interface SlackColors {
     added: string;
 }
 
@@ -29,9 +27,9 @@ export class Slack {
 
     private webhookPath: string;
 
-    private colors: ISlackColors;
+    private colors: SlackColors;
 
-    public async load(settings: ISettingsModel): Promise<void> {
+    public async load(settings: SettingsModel): Promise<void> {
         return new Promise((resolve) => {
             this.token = settings.slack.token;
             this.secret = settings.slack.secret;
