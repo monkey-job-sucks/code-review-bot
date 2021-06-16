@@ -1,14 +1,11 @@
-// eslint-disable-next-line no-unused-vars
 import { CronJob, CronCommand } from 'cron';
 
-/* eslint-disable no-unused-vars */
-import { ISettingsModel } from '../api/mongo';
-/* eslint-enable no-unused-vars */
+import { SettingsModel } from '../api/mongo';
 import rankingJob from './rankings/rankings.job';
 import notifyOpenMRs from './notify-open-reviews/notify-open-reviews.job';
 import fetchMRUpdatesJob from './fetch-updates/fetch-updates.job';
 
-interface IJobs {
+interface Jobs {
     ranking?: CronJob;
     notifyOpenMRs?: CronJob;
     fetchMRUpdates?: CronJob;
@@ -25,9 +22,9 @@ const buildCronJob = (
     timezone = process.env.TIMEZONE,
 ) => new CronJob(cronTime, onTick, onComplete, autoStart, timezone);
 
-const jobs: IJobs = {};
+const jobs: Jobs = {};
 
-const start = (settings: ISettingsModel): IJobs => {
+const start = (settings: SettingsModel): Jobs => {
     const {
         openRequests,
         notifyRanking,

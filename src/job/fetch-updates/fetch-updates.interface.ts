@@ -1,36 +1,35 @@
-// eslint-disable-next-line no-unused-vars
-import { IReviewRequestModelActionLog } from '../../api/mongo';
+import { ReviewRequestModelActionLog } from '../../api/mongo';
 
-export interface IReactions {
+export interface Reactions {
     add: string[];
     remove: string[];
 }
 
-export interface IDiscussion {
+export interface Discussion {
     reviewers?: string[];
 }
 
-export interface IUpvote {
+export interface Upvote {
     upvoters?: string[];
 }
 
-export interface IFinished {
-    merged?: IReviewRequestModelActionLog;
-    closed?: IReviewRequestModelActionLog;
+export interface Finished {
+    merged?: ReviewRequestModelActionLog;
+    closed?: ReviewRequestModelActionLog;
 }
 
-export interface IRemoteInfo extends IFinished, IUpvote, IDiscussion {
-    reactions: IReactions;
+export interface RemoteInfo extends Finished, Upvote, Discussion {
+    reactions: Reactions;
 }
 
-export interface IUpvoteReactions extends IUpvote {
-    reactions: IReactions;
+export interface UpvoteReactions extends Upvote {
+    reactions: Reactions;
 }
 
-export interface IDiscussionReaction extends IDiscussion {
-    reactions: IReactions;
+export interface DiscussionReaction extends Discussion {
+    reactions: Reactions;
 }
 
-export interface IFinishedReaction extends IFinished {
+export interface FinishedReaction extends Finished {
     reaction?: string;
 }

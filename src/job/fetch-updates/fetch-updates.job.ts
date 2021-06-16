@@ -1,31 +1,27 @@
-// eslint-disable-next-line no-unused-vars
 import { PromiseQueue, PromiseQueueItemResponse } from 'promise-queue-manager';
 
 import gitlabHelper from './fetch-updates.gitlab.helper';
 import azureHelper from './fetch-updates.azure.helper';
 import logger from '../../helpers/Logger';
-import Sentry from '../../helpers/Sentry';
 import { service as slack } from '../../api/slack';
 import jobManager from '../job-manager';
 
-/* eslint-disable no-unused-vars */
 import {
     ReviewRequest,
-    ISettingsModel,
-    IReviewRequestModel,
+    SettingsModel,
+    ReviewRequestModel,
     EReviewRequestOrigin,
 } from '../../api/mongo';
 import {
-    IRemoteInfo,
-    IReactions,
-    IUpvoteReactions,
-    IFinishedReaction,
-    IDiscussionReaction,
+    RemoteInfo,
+    Reactions,
+    UpvoteReactions,
+    FinishedReaction,
+    DiscussionReaction,
 } from './fetch-updates.interface';
-import { IJobConfig } from '../job.interface';
-import { service as gitlab, IGitlabMergeRequestDetail } from '../../api/gitlab';
-import { service as azure, IAzurePullRequestDetail } from '../../api/azure';
-/* eslint-enable no-unused-vars */
+import { JobConfig } from '../job.interface';
+import { service as gitlab, GitlabMergeRequestDetail } from '../../api/gitlab';
+import { service as azure, AzurePullRequestDetail } from '../../api/azure';
 
 const CONCURRENCE = 10;
 const SHOULD_STOP_ON_ERROR = false;
@@ -34,38 +30,37 @@ const JOB_NAME = 'fetch-updates';
 
 const fetchOpenReviews = () => ReviewRequest.find({ 'done': false });
 
-const fetchReview = (review: IReviewRequestModel) => {
+const fetchReview = (review: ReviewRequestModel) => {
     switch (review.origin) {
         case EReviewRequestOrigin.GITLAB:
             return gitlab.getMergeRequestDetail(review.url);
         case EReviewRequestOrigin.AZURE:
             return azure.getPullRequestDetail(review.url);
         default:
-            // eslint-disable-next-line no-underscore-dangle
             throw new Error(`Review ${review._id} has invalid origin!`);
     }
 };
 
 const getRemoteInfo = async (
-    settings: ISettingsModel,
-    currentReview: IReviewRequestModel,
-    remoteReview: IGitlabMergeRequestDetail | IAzurePullRequestDetail,
-): Promise<IRemoteInfo> => {
-    const remoteInfo: IRemoteInfo = {
+    settings: SettingsModel,
+    currentReview: ReviewRequestModel,
+    remoteReview: GitlabMergeRequestDetail | AzurePullRequestDetail,
+): Promise<RemoteInfo> => {
+    const remoteInfo: RemoteInfo = {
         'reactions': {
             'add': [],
             'remove': [],
         },
     };
 
-    let upvoted: IUpvoteReactions;
-    let finished: IFinishedReaction;
-    let reviewed: IDiscussionReaction;
+    let upvoted: UpvoteReactions;
+    let finished: FinishedReaction;
+    let reviewed: DiscussionReaction;
 
     /* eslint-disable no-case-declarations */
     switch (currentReview.origin) {
         case EReviewRequestOrigin.GITLAB:
-            const remoteMR = remoteReview as IGitlabMergeRequestDetail;
+            const remoteMR = remoteReview as GitlabMergeRequestDetail;
 
             const [gitlabReactions, gitlabDiscussions] = await Promise.all([
                 gitlab.getMergeRequestReactions(currentReview.url),
@@ -82,7 +77,7 @@ const getRemoteInfo = async (
 
             break;
         case EReviewRequestOrigin.AZURE:
-            const remotePR = remoteReview as IAzurePullRequestDetail;
+            const remotePR = remoteReview as AzurePullRequestDetail;
 
             const [azureReactions, azureDiscussions] = await Promise.all([
                 azure.getPullRequestReviewers(currentReview.url),
@@ -122,7 +117,7 @@ const getRemoteInfo = async (
 
 const updateReactions = (
     currentReactions: string[],
-    newReactions: IReactions,
+    newReactions: Reactions,
 ): string[] => currentReactions.reduce((nextReactions: string[], reaction: string) => {
     if (!newReactions.remove.includes(reaction)) nextReactions.push(reaction);
 
@@ -130,8 +125,8 @@ const updateReactions = (
 }, []).concat(newReactions.add);
 
 const updateOpenReview = async (
-    currentReview: IReviewRequestModel,
-    remoteInfo: IRemoteInfo,
+    currentReview: ReviewRequestModel,
+    remoteInfo: RemoteInfo,
 ) => {
     try {
         await slack.removeReaction(
@@ -163,20 +158,6 @@ const updateOpenReview = async (
 
         return currentReview.save();
     } catch (err) {
-        Sentry.capture(err, {
-            'level': Sentry.level.Error,
-            'tags': {
-                'fileName': 'fetch-updates.job',
-            },
-            'context': {
-                'name': 'updateMR',
-                'data': {
-                    'currentMR': JSON.stringify(currentReview),
-                    'remoteInfo': JSON.stringify(remoteInfo),
-                },
-            },
-        });
-
         logger.info(currentReview);
 
         return logger.error(err.stack || err);
@@ -184,19 +165,19 @@ const updateOpenReview = async (
 };
 
 const updateReview = async (
-    settings: ISettingsModel,
-    openReview: IReviewRequestModel,
+    settings: SettingsModel,
+    openReview: ReviewRequestModel,
 ): Promise<void> => {
     const remoteReview = await fetchReview(openReview);
 
-    const remoteInfo: IRemoteInfo = await getRemoteInfo(settings, openReview, remoteReview.detail);
+    const remoteInfo: RemoteInfo = await getRemoteInfo(settings, openReview, remoteReview.detail);
 
     await updateOpenReview(openReview, remoteInfo);
 };
 
-const updateOpenReviews = async (settings: ISettingsModel, finish: Function): Promise<void> => {
+const updateOpenReviews = async (settings: SettingsModel, finish: Function): Promise<void> => {
     try {
-        const openReviews: IReviewRequestModel[] = await fetchOpenReviews();
+        const openReviews: ReviewRequestModel[] = await fetchOpenReviews();
 
         if (openReviews.length === 0) return finish(0);
 
@@ -226,25 +207,14 @@ const updateOpenReviews = async (settings: ISettingsModel, finish: Function): Pr
 
         return queue.start();
     } catch (err) {
-        Sentry.capture(err, {
-            'level': Sentry.level.Error,
-            'tags': {
-                'fileName': 'fetch-updates.job',
-            },
-            'context': {
-                'name': 'updateOpenReviews',
-                'data': {},
-            },
-        });
-
         logger.error(err.stack || err);
 
         return finish(NaN);
     }
 };
 
-const fetchMRUpdatesJob: IJobConfig = {
-    'function': (settings: ISettingsModel) => async function fetchReviewsUpdates() {
+const fetchMRUpdatesJob: JobConfig = {
+    'function': (settings: SettingsModel) => async function fetchReviewsUpdates() {
         if (jobManager.isRunning(JOB_NAME)) return false;
 
         jobManager.start(JOB_NAME);

@@ -1,16 +1,13 @@
-/* eslint-disable no-unused-vars */
 import { Botkit, BotkitMessage, BotWorker } from 'botkit';
 import { SlackAdapter, SlackEventMiddleware, SlackMessageTypeMiddleware } from 'botbuilder-adapter-slack';
 import { FilesUploadArguments } from '@slack/web-api';
 
-import { ISettingsModel } from '../mongo';
-/* eslint-enabled no-unused-vars */
+import { SettingsModel } from '../mongo';
 
-import Sentry from '../../helpers/Sentry';
 import Context from '../../helpers/Context';
 import commands from './slack.commands';
 
-interface ISlackColors {
+interface SlackColors {
     added: string;
 }
 
@@ -30,9 +27,9 @@ export class Slack {
 
     private webhookPath: string;
 
-    private colors: ISlackColors;
+    private colors: SlackColors;
 
-    public async load(settings: ISettingsModel): Promise<void> {
+    public async load(settings: SettingsModel): Promise<void> {
         return new Promise((resolve) => {
             this.token = settings.slack.token;
             this.secret = settings.slack.secret;
@@ -86,21 +83,6 @@ export class Slack {
             try {
                 await api.reactions.add({ name, timestamp, channel });
             } catch (err) {
-                Sentry.capture(err, {
-                    'level': Sentry.level.Error,
-                    'tags': {
-                        'fileName': 'slack.service',
-                    },
-                    'context': {
-                        'name': 'addReaction',
-                        'data': {
-                            'method': 'api.reactions.add',
-                            'message': JSON.stringify(message),
-                            'emoji': String(emoji),
-                        },
-                    },
-                });
-
                 if (err.message !== 'An API error occurred: already_reacted') throw err;
             }
         }
@@ -120,21 +102,6 @@ export class Slack {
             try {
                 await api.reactions.remove({ name, timestamp, channel });
             } catch (err) {
-                Sentry.capture(err, {
-                    'level': Sentry.level.Error,
-                    'tags': {
-                        'fileName': 'slack.service',
-                    },
-                    'context': {
-                        'name': 'removeReaction',
-                        'data': {
-                            'method': 'api.reactions.remove',
-                            'message': JSON.stringify(message),
-                            'emoji': String(emoji),
-                        },
-                    },
-                });
-
                 if (err.message !== 'An API error occurred: no_reaction') throw err;
             }
         }

@@ -1,15 +1,12 @@
-/* eslint-disable no-unused-vars */
 import { BotWorker, BotkitMessage } from 'botkit';
 
 import slack from './slack.service';
 import logger from '../../helpers/Logger';
-import Sentry from '../../helpers/Sentry';
 import {
     EReviewRequestOrigin,
 } from '../mongo';
 import { service as gitlab } from '../gitlab';
 import { service as azure } from '../azure';
-/* eslint-enable no-unused-vars */
 import Message from '../../helpers/Message';
 import helper from './slack.commands.helper';
 
@@ -25,44 +22,24 @@ const handleCodeReview = async (bot: BotWorker, message: BotkitMessage) => {
 
         switch (origin) {
             case EReviewRequestOrigin.GITLAB:
-                return helper.saveGitlabMR(bot, message);
+                await helper.saveGitlabMR(bot, message);
+                break;
             case EReviewRequestOrigin.AZURE:
-                return helper.saveAzurePR(bot, message);
+                await helper.saveAzurePR(bot, message);
+                break;
             default:
                 throw new Message('Não posso aceitar links desse git :disappointed:');
         }
     } catch (err) {
-        const captureOptions = {
-            'tags': {
-                'command': '/code-review',
-            },
-            'context': {
-                'name': 'handleCodeReview',
-                'data': {
-                    'message': message.text,
-                },
-            },
-        };
-
         if (err instanceof Message) {
             logger.info(err);
 
-            Sentry.capture(err, {
-                'level': Sentry.level.Warning,
-                ...captureOptions,
-            });
+            await slack.sendEphemeral(message, err.message);
+        } else {
+            logger.error(err.stack || err);
 
-            return slack.sendEphemeral(message, err.message);
+            throw err;
         }
-
-        Sentry.capture(err, {
-            'level': Sentry.level.Error,
-            ...captureOptions,
-        });
-
-        logger.error(err.stack || err);
-
-        throw err;
     }
 };
 

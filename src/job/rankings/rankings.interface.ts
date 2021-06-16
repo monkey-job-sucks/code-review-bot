@@ -1,11 +1,11 @@
-export interface IRankingAnalyticsSum {
+export interface RankingAnalyticsSum {
     username: string;
     total: number;
 }
 
-export interface IRanking {
+export interface Ranking {
     channel: string;
     period: string;
-    upvoters?: IRankingAnalyticsSum[];
-    reviewers?: IRankingAnalyticsSum[];
+    upvoters?: RankingAnalyticsSum[];
+    reviewers?: RankingAnalyticsSum[];
 }

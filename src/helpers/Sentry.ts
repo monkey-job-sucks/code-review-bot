@@ -2,8 +2,7 @@
 // this is disable because `withScope` needs
 // function instead of arrow function
 import * as SentryNode from '@sentry/node';
-// eslint-disable-next-line no-unused-vars
-import * as Tracing from '@sentry/tracing';
+
 import Context from './Context';
 
 interface SimpleObject {
@@ -25,7 +24,7 @@ const init = (url: string) => {
     SentryNode.init({
         'dsn': url,
         'tracesSampleRate': 1.0,
-        'environment': process.env.NODE_ENV || 'production',
+        'environment': process.env.NODE_ENV || 'development',
     });
 };
 

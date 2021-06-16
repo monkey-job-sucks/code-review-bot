@@ -1,17 +1,15 @@
 import * as _ from 'lodash';
 
-/* eslint-disable no-unused-vars */
-import { IFinishedReaction, IUpvoteReactions, IDiscussionReaction } from './fetch-updates.interface';
-import { IReviewRequestModel, ISettingsModel } from '../../api/mongo';
-import { IAzurePullRequestDetail, IAzurePullRequestReviewer, IAzurePullRequestThread } from '../../api/azure';
-/* eslint-enable no-unused-vars */
+import { FinishedReaction, UpvoteReactions, DiscussionReaction } from './fetch-updates.interface';
+import { ReviewRequestModel, SettingsModel } from '../../api/mongo';
+import { AzurePullRequestDetail, AzurePullRequestReviewer, AzurePullRequestThread } from '../../api/azure';
 import slackHelper from '../../api/slack/slack.helper';
 
 const getUpvoteReactions = (
-    currentPR: IReviewRequestModel,
-    remoteReactions: IAzurePullRequestReviewer[],
-): IUpvoteReactions => {
-    const upvote: IUpvoteReactions = {
+    currentPR: ReviewRequestModel,
+    remoteReactions: AzurePullRequestReviewer[],
+): UpvoteReactions => {
+    const upvote: UpvoteReactions = {
         'reactions': {
             'add': [],
             'remove': [],
@@ -19,7 +17,7 @@ const getUpvoteReactions = (
     };
 
     const remoteUpvoters = remoteReactions
-        .reduce((names: string[], reaction: IAzurePullRequestReviewer) => {
+        .reduce((names: string[], reaction: AzurePullRequestReviewer) => {
             /*
                 10 - approved
                 5 - approved with suggestions
@@ -58,11 +56,11 @@ const getUpvoteReactions = (
 };
 
 const getDiscussionReaction = (
-    settings: ISettingsModel,
-    currentPR: IReviewRequestModel,
-    remoteDiscussions: IAzurePullRequestThread[],
-): IDiscussionReaction => {
-    const discussion: IDiscussionReaction = {
+    settings: SettingsModel,
+    currentPR: ReviewRequestModel,
+    remoteDiscussions: AzurePullRequestThread[],
+): DiscussionReaction => {
+    const discussion: DiscussionReaction = {
         'reactions': {
             'add': [],
             'remove': [],
@@ -98,10 +96,10 @@ const getDiscussionReaction = (
 };
 
 const getFinishedReaction = (
-    settings: ISettingsModel,
-    remotePR: IAzurePullRequestDetail,
-): IFinishedReaction => {
-    const finished: IFinishedReaction = {};
+    settings: SettingsModel,
+    remotePR: AzurePullRequestDetail,
+): FinishedReaction => {
+    const finished: FinishedReaction = {};
 
     switch (remotePR.status) {
         case 'completed':

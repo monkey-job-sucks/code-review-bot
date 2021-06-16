@@ -1,14 +1,29 @@
 import * as moment from 'moment';
-/* eslint-disable no-unused-vars */
 import { MessageAttachment } from '@slack/web-api';
 
-import { IChannelReviewRequests, EReviewRequestOrigin } from '../mongo';
-import { IRanking } from '../../job/rankings/rankings.interface';
-/* eslint-enable no-unused-vars */
+import { ChannelReviewRequests, EReviewRequestOrigin, ReviewRequestModel } from '../mongo';
+import { Ranking } from '../../job/rankings/rankings.interface';
 
 moment.locale('pt-br');
 
 const rankingEmojis = [':first_place_medal:', ':second_place_medal:', ':third_place_medal:'];
+
+const getOpenReviewSlackMessage = (review: ReviewRequestModel): string => {
+    const openedSince = moment(review.added.at).fromNow();
+
+    switch (review.origin) {
+        case EReviewRequestOrigin.GITLAB:
+            return `<${review.url}|#${review.gitlab.iid} ${review.repository}> adicionado ${openedSince}`;
+        case EReviewRequestOrigin.AZURE:
+            return `<${review.url}|#${review.id} ${review.repository}> adicionado ${openedSince}`;
+        default:
+            return null;
+    }
+};
+
+const getOpenReviewMessages = (
+    reviews: ReviewRequestModel[],
+): string[] => reviews.map(getOpenReviewSlackMessage).filter((message) => !!message);
 
 const generateAddedReviewRequestMessage = (
     slackUser: string,
@@ -24,30 +39,42 @@ const generateAddedReviewRequestMessage = (
     };
 };
 
-const generateDelayedReviewRequestsMessage = (delayedRequests: IChannelReviewRequests): string => {
-    const messages: string[] = [];
+const generateDelayedReviewRequestsMessage = (
+    delayedRequests: ChannelReviewRequests,
+    discussionReaction: string,
+): string => {
+    const reviews = {
+        'withDiscussions': delayedRequests.reviews.filter(
+            (review) => review.slack.reactions?.includes(discussionReaction),
+        ),
+        'withoutDiscussions': delayedRequests.reviews.filter(
+            (review) => !review.slack.reactions?.includes(discussionReaction),
+        ),
+    };
 
-    messages.push('<!here>, ainda temos os seguintes reviews abertos:');
+    let messages: string[] = ['<!here>'];
 
-    delayedRequests.reviews.forEach((review) => {
-        const openedSince = moment(review.added.at).fromNow();
+    if (reviews.withoutDiscussions.length) {
+        messages.push('Ainda temos os seguintes reviews abertos:');
 
-        switch (review.origin) {
-            case EReviewRequestOrigin.GITLAB:
-                messages.push(`<${review.url}|#${review.gitlab.iid} ${review.repository}> adicionado ${openedSince}`);
-                break;
-            case EReviewRequestOrigin.AZURE:
-                messages.push(`<${review.url}|#${review.id} ${review.repository}> adicionado ${openedSince}`);
-                break;
-            default:
-                break;
-        }
-    });
+        messages = messages.concat(...getOpenReviewMessages(reviews.withoutDiscussions));
+    }
+
+    // new line
+    if (reviews.withDiscussions.length && reviews.withoutDiscussions.length) {
+        messages.push('');
+    }
+
+    if (reviews.withDiscussions.length) {
+        messages.push('Ainda temos os seguintes reviews abertos com comentários:');
+
+        messages = messages.concat(...getOpenReviewMessages(reviews.withDiscussions));
+    }
 
     return messages.join('\r');
 };
 
-const generateRankingMessage = (ranking: IRanking): string => {
+const generateRankingMessage = (ranking: Ranking): string => {
     const messages: string[] = [];
 
     if (ranking.upvoters.length > 0 || ranking.reviewers.length > 0) {

@@ -1,25 +1,23 @@
-/* eslint-disable no-unused-vars */
 import { BotWorker, BotkitMessage } from 'botkit';
 
 import factory from './slack.factory';
 import {
     ReviewRequest,
-    IReviewRequestModel,
+    ReviewRequestModel,
     EReviewRequestOrigin,
 } from '../mongo';
-import { service as gitlab, IGitlabMergeRequest } from '../gitlab';
-import { service as azure, IAzurePullRequest } from '../azure';
-/* eslint-enable no-unused-vars */
+import { service as gitlab, GitlabMergeRequest } from '../gitlab';
+import { service as azure, AzurePullRequest } from '../azure';
 import slack from './slack.service';
 import Message from '../../helpers/Message';
 
 const saveOnMongo = async (
-    reviewRequest: IGitlabMergeRequest | IAzurePullRequest,
+    reviewRequest: GitlabMergeRequest | AzurePullRequest,
     origin: EReviewRequestOrigin,
     message: BotkitMessage,
     slackMessageId: string,
 ) => {
-    const model: Partial<IReviewRequestModel> = {
+    const model: Partial<ReviewRequestModel> = {
         'rawReviewRequest': JSON.stringify(reviewRequest),
         'rawSlackMessage': JSON.stringify(message),
         'origin': origin,
@@ -41,7 +39,7 @@ const saveOnMongo = async (
     /* eslint-disable no-case-declarations */
     switch (origin) {
         case EReviewRequestOrigin.GITLAB:
-            const mr = (reviewRequest as IGitlabMergeRequest);
+            const mr = (reviewRequest as GitlabMergeRequest);
 
             model.id = String(mr.detail.id);
             model.created = {
@@ -54,7 +52,7 @@ const saveOnMongo = async (
             };
             break;
         case EReviewRequestOrigin.AZURE:
-            const pr = (reviewRequest as IAzurePullRequest);
+            const pr = (reviewRequest as AzurePullRequest);
 
             model.id = String(pr.detail.pullRequestId);
             model.created = {
@@ -78,17 +76,17 @@ const saveOnMongo = async (
 };
 
 const validateReviewRequest = async (
-    reviewRequest: IGitlabMergeRequest | IAzurePullRequest,
+    reviewRequest: GitlabMergeRequest | AzurePullRequest,
     origin: EReviewRequestOrigin,
 ): Promise<void> => {
     let id: number;
 
     switch (origin) {
         case EReviewRequestOrigin.GITLAB:
-            id = (reviewRequest as IGitlabMergeRequest).detail.id;
+            id = (reviewRequest as GitlabMergeRequest).detail.id;
             break;
         case EReviewRequestOrigin.AZURE:
-            id = (reviewRequest as IAzurePullRequest).detail.pullRequestId;
+            id = (reviewRequest as AzurePullRequest).detail.pullRequestId;
             break;
         default:
             break;
