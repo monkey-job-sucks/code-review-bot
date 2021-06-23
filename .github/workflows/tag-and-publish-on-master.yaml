@@ -16,12 +16,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@master
+      - name: Get Package Version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
       - name: Create new tag
         uses: anothrNick/github-tag-action@master
         env:
-          REPO_OWNER: monkey-job-sucks
-          DEFAULT_BUMP: minor
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CUSTOM_TAG: ${{ steps.package-version.outputs.current-version }}
   draft_release:
     name: Generate Draft Release
     runs-on: ubuntu-latest
