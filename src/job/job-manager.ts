@@ -6,7 +6,7 @@ class JobManager {
     isRunning(name: string): boolean {
         const isJobRunning = this.running.includes(name);
 
-        logger.debug(`[${name}]: Job is ${!isJobRunning && 'not'} running`);
+        logger.debug(`[${name}]: Job is${isJobRunning ? '' : ' not'} running`);
 
         return isJobRunning;
     }
