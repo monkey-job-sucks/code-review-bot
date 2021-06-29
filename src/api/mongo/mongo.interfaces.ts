@@ -97,10 +97,14 @@ interface SettingsModelCronOpenRequests extends SettingsModelCronBase {
     hours: number;
 }
 
+interface SettingsModelCronFetchRequests extends SettingsModelCronBase {
+    concurrence: number;
+}
+
 interface SettingsModelCron {
     notifyRanking: SettingsModelCronBase;
     openRequests: SettingsModelCronOpenRequests;
-    fetchRequestsUpdates: SettingsModelCronBase;
+    fetchRequestsUpdates: SettingsModelCronFetchRequests;
 }
 
 interface SettingsAzure {

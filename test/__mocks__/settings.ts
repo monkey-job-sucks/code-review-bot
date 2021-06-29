@@ -15,6 +15,7 @@ const DEFAULT_SETTINGS = {
         fetchRequestsUpdates: {
             enabled: false,
             pattern: '',
+            concurrence: 10,
         },
     },
     gitlab: {

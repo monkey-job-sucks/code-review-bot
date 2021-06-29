@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS: Partial<SettingsModel> = {
         'fetchRequestsUpdates': {
             'enabled': false,
             'pattern': '',
+            'concurrence': 10,
         },
     },
     'gitlab': {

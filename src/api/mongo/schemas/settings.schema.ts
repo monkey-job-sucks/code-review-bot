@@ -21,6 +21,7 @@ const schema = new Schema({
         'fetchRequestsUpdates': {
             'enabled': Boolean,
             'pattern': String,
+            'concurrence': Number,
         },
     },
     'gitlab': {
