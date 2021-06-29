@@ -1,4 +1,4 @@
-import { ISettingsModel } from '../../src/api/mongo';
+import { SettingsModel } from '../../src/api/mongo';
 
 const DEFAULT_SETTINGS = {
     timezone: '',
@@ -48,4 +48,4 @@ const DEFAULT_SETTINGS = {
     sentryUrl: '',
 };
 
-export default DEFAULT_SETTINGS as unknown as ISettingsModel;
+export default DEFAULT_SETTINGS as unknown as SettingsModel;

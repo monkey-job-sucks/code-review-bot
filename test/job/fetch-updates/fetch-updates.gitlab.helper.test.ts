@@ -2,18 +2,18 @@ import settings from '../../__mocks__/settings';
 
 import helper from '../../../src/job/fetch-updates/fetch-updates.gitlab.helper';
 
-import { IReviewRequestModel } from '../../../src/api/mongo';
-import { IGitlabMergeRequestDetail, IGitlabMergeRequestReaction, IGitlabUser, IGitlabMergeRequestDiscussion } from '../../../src/api/gitlab';
+import { ReviewRequestModel } from '../../../src/api/mongo';
+import { GitlabMergeRequestDetail, GitlabMergeRequestReaction, GitlabUser, GitlabMergeRequestDiscussion } from '../../../src/api/gitlab';
 
 const UPVOTE_MR_REACTION = 'thumbsup';
 
-const getUser = (name: string): IGitlabUser => {
+const getUser = (name: string): GitlabUser => {
     return {
         'username': name,
-    } as IGitlabUser;
+    } as GitlabUser;
 };
 
-const getDiscussion = (user: IGitlabUser, isOpen: boolean) => {
+const getDiscussion = (user: GitlabUser, isOpen: boolean) => {
     return {
         'individual_note': false,
         'notes': [{
@@ -21,19 +21,19 @@ const getDiscussion = (user: IGitlabUser, isOpen: boolean) => {
             'resolvable': true,
             'resolved': !isOpen,
         }],
-    } as IGitlabMergeRequestDiscussion;
+    } as GitlabMergeRequestDiscussion;
 };
 
-const getUserUpvote = (user: IGitlabUser): IGitlabMergeRequestReaction => {
+const getUserUpvote = (user: GitlabUser): GitlabMergeRequestReaction => {
     return {
         'name': UPVOTE_MR_REACTION,
         'user': user,
-    } as IGitlabMergeRequestReaction;
+    } as GitlabMergeRequestReaction;
 };
 
 describe('fetch-updates.job', () => {
-    let currentMR: IReviewRequestModel;
-    let remoteMR: IGitlabMergeRequestDetail;
+    let currentMR: ReviewRequestModel;
+    let remoteMR: GitlabMergeRequestDetail;
 
     beforeEach(() => {
         currentMR = {
@@ -44,15 +44,15 @@ describe('fetch-updates.job', () => {
             'slack': {
                 'reactions': [],
             },
-        } as IReviewRequestModel;
+        } as ReviewRequestModel;
 
         remoteMR = {
             'upvotes': 0,
-        } as IGitlabMergeRequestDetail;
+        } as GitlabMergeRequestDetail;
     });
 
     describe('getUpvoteReactions', () => {
-        let remoteReactions: IGitlabMergeRequestReaction[] = [];
+        let remoteReactions: GitlabMergeRequestReaction[] = [];
 
         beforeEach(() => {
             remoteReactions = [];
@@ -158,7 +158,7 @@ describe('fetch-updates.job', () => {
     });
 
     describe('getDiscussionReaction', () => {
-        let remoteDiscussions: IGitlabMergeRequestDiscussion[] = [];
+        let remoteDiscussions: GitlabMergeRequestDiscussion[] = [];
 
         beforeEach(() => {
             remoteDiscussions = [];
