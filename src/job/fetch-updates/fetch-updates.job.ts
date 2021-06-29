@@ -23,7 +23,6 @@ import { JobConfig } from '../job.interface';
 import { service as gitlab, GitlabMergeRequestDetail } from '../../api/gitlab';
 import { service as azure, AzurePullRequestDetail } from '../../api/azure';
 
-const CONCURRENCE = 10;
 const SHOULD_STOP_ON_ERROR = false;
 
 const JOB_NAME = 'fetch-updates';
@@ -185,7 +184,7 @@ const updateOpenReviews = async (settings: SettingsModel, finish: Function): Pro
 
         const queue = new PromiseQueue<void>({
             'promises': updateReviews,
-        }, CONCURRENCE, SHOULD_STOP_ON_ERROR);
+        }, settings.cron.fetchRequestsUpdates.concurrence, SHOULD_STOP_ON_ERROR);
 
         queue.on(PromiseQueue.EVENTS.ITEM_ERROR, (res: PromiseQueueItemResponse<void>) => {
             logger.error(`[${JOB_NAME}] ITEM_ERROR: ${JSON.stringify(res)}`);
