@@ -1,4 +1,4 @@
-name: Lint and Test
+name: Validate PR
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   lint-and-test:
-    name: Lint and Test on ${{ matrix.os }}@${{ matrix.node }}
+    name: Validate PR on ${{ matrix.os }}@${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -25,3 +25,5 @@ jobs:
         run: npm run lint
       - name: npm run test
         run: npm run test
+      - name: npm run build
+        run: npm run build
