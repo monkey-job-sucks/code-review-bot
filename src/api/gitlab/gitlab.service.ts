@@ -33,6 +33,7 @@ class Gitlab {
             'headers': {
                 'Private-Token': this.token,
             },
+            'timeout': 3000,
         });
     }
 

@@ -33,6 +33,7 @@ class Azure {
             'params': {
                 'api-version': this.apiVersion,
             },
+            'timeout': 3000,
         });
     }
 
