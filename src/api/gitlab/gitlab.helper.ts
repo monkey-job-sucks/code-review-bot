@@ -3,7 +3,9 @@ import { GitlabMergeRequestUrlInfo } from './gitlab.interfaces';
 const regex = /(.*)\/merge_requests\/(.\d*)/;
 
 const getUrlInfo = (url: string): GitlabMergeRequestUrlInfo => {
-    const [,,, ...path] = url.split('/');
+    const oldUrlPattern = url.replace('/-/', '/');
+
+    const [,,, ...path] = oldUrlPattern.split('/');
 
     const groups = regex.exec(path.join('/'));
 
