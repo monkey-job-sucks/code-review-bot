@@ -11,6 +11,8 @@ interface SlackColors {
     added: string;
 }
 
+const ADD_REACTION_EXPECTED_ERRORS = ['An API error occurred: already_reacted', 'An API error occurred: message_not_found'];
+
 // TODO:
 // validar se todos os escopos são necessários
 // colocar storage do mongo se for necessário manter conversas
@@ -83,7 +85,7 @@ export class Slack {
             try {
                 await api.reactions.add({ name, timestamp, channel });
             } catch (err) {
-                if (err.message !== 'An API error occurred: already_reacted') throw err;
+                if (!ADD_REACTION_EXPECTED_ERRORS.includes(err.message)) throw err;
             }
         }
         /* eslint-enable no-restricted-syntax, no-await-in-loop */
