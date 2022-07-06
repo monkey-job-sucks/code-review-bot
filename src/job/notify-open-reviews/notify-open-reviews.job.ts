@@ -1,6 +1,7 @@
 import { BotkitMessage } from 'botkit';
 import * as moment from 'moment';
 
+import { WebAPICallResult } from '@slack/web-api';
 import { ReviewRequest, ReviewRequestModel, SettingsModel } from '../../api/mongo';
 import { service as slack, factory as slackFactory } from '../../api/slack';
 import { JobConfig } from '../job.interface';
@@ -25,10 +26,12 @@ const fetchDelayedReviews = (hours: number): Promise<ReviewRequestModel[]> => {
 const notifyChannel = (
     channelReviews: ReviewRequestModel,
     discussionReaction: string,
-) => {
+    minUpvoters: number,
+): Promise<WebAPICallResult> => {
     const message = slackFactory.generateDelayedReviewRequestsMessage(
         channelReviews,
         discussionReaction,
+        minUpvoters,
     );
 
     return slack.sendMessage({ 'channel': channelReviews._id } as BotkitMessage, message);
@@ -43,7 +46,7 @@ const notifyDelayedReviews = async (settings: SettingsModel): Promise<number> =>
         if (openReviews.length === 0) return 0;
 
         await Promise.all(
-            openReviews.map((review) => notifyChannel(review, settings.slack.reactions.discussion)),
+            openReviews.map((review) => notifyChannel(review, settings.slack.reactions.discussion, settings.slack.minUpvoters)),
         );
 
         return openReviews.length;

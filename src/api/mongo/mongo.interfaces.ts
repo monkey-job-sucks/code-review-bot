@@ -85,6 +85,7 @@ interface SettingsSlack {
     requestAddColor: string;
     allowedChannels: string;
     reactions: SettingsSlackReactions;
+    minUpvoters: number;
     log: SettingsSlackLog;
 }
 

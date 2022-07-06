@@ -46,6 +46,7 @@ const schema = new Schema({
             'merged': String,
             'closed': String,
         },
+        'minUpvoters': Number,
         'log': {
             'enabled': Boolean,
             'channelId': String,

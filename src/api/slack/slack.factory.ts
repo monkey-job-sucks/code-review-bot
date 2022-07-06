@@ -3,10 +3,17 @@ import { MessageAttachment } from '@slack/web-api';
 
 import { ChannelReviewRequests, EReviewRequestOrigin, ReviewRequestModel } from '../mongo';
 import { Ranking } from '../../job/rankings/rankings.interface';
+import NotificationTypeEnum from '../../enum/notification-type.enum';
 
 moment.locale('pt-br');
 
 const rankingEmojis = [':first_place_medal:', ':second_place_medal:', ':third_place_medal:'];
+const { APPROVED_NOT_FINISHED, WITH_DISCUSSIONS, WITHOUT_DISCUSSIONS } = NotificationTypeEnum;
+const notifyMessage = {
+    [APPROVED_NOT_FINISHED]: ':white_check_mark: Já atingiram os likes necessários, mas ainda não foram finalizados:',
+    [WITH_DISCUSSIONS]: ':speech_balloon: Ainda temos os seguintes reviews abertos com comentários:',
+    [WITHOUT_DISCUSSIONS]: ':eyes: Ainda temos os seguintes reviews abertos:',
+};
 
 const getOpenReviewSlackMessage = (review: ReviewRequestModel): string => {
     const openedSince = moment(review.added.at).fromNow();
@@ -42,34 +49,32 @@ const generateAddedReviewRequestMessage = (
 const generateDelayedReviewRequestsMessage = (
     delayedRequests: ChannelReviewRequests,
     discussionReaction: string,
+    minUpvoters: number,
 ): string => {
     const reviews = {
-        'withDiscussions': delayedRequests.reviews.filter(
+        [WITHOUT_DISCUSSIONS]: delayedRequests.reviews.filter(
+            (review) => !review.slack.reactions?.includes(discussionReaction)
+                && review.analytics?.upvoters.length < minUpvoters,
+        ),
+        [WITH_DISCUSSIONS]: delayedRequests.reviews.filter(
             (review) => review.slack.reactions?.includes(discussionReaction),
         ),
-        'withoutDiscussions': delayedRequests.reviews.filter(
-            (review) => !review.slack.reactions?.includes(discussionReaction),
+        [APPROVED_NOT_FINISHED]: delayedRequests.reviews.filter(
+            (review) => !review.slack.reactions?.includes(discussionReaction)
+                && review.analytics?.upvoters.length >= minUpvoters,
         ),
     };
 
     let messages: string[] = ['<!here>'];
 
-    if (reviews.withoutDiscussions.length) {
-        messages.push('Ainda temos os seguintes reviews abertos:');
+    Object.entries(reviews).forEach(
+        ([key, value]) => {
+            if (!value.length) return;
 
-        messages = messages.concat(...getOpenReviewMessages(reviews.withoutDiscussions));
-    }
-
-    // new line
-    if (reviews.withDiscussions.length && reviews.withoutDiscussions.length) {
-        messages.push('');
-    }
-
-    if (reviews.withDiscussions.length) {
-        messages.push('Ainda temos os seguintes reviews abertos com comentários:');
-
-        messages = messages.concat(...getOpenReviewMessages(reviews.withDiscussions));
-    }
+            messages.push(notifyMessage[key]);
+            messages = messages.concat(...getOpenReviewMessages(value), '\n');
+        },
+    );
 
     return messages.join('\r');
 };

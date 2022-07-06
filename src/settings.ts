@@ -42,6 +42,7 @@ const DEFAULT_SETTINGS: Partial<SettingsModel> = {
             'merged': 'heavy_check_mark',
             'closed': 'x',
         },
+        'minUpvoters': 3,
         'log': {
             'enabled': false,
             'channelId': '',
