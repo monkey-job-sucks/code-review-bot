@@ -35,6 +35,7 @@ const DEFAULT_SETTINGS = {
             merged: 'heavy_check_mark',
             closed: 'x',
         },
+        minUpvoters: 3,
         log: {
             enable: false,
             channelId: '',
